@@ -54,7 +54,7 @@
   align-items: center;
   gap: 9px;
 
-  flex: 1 1 240px;
+  min-width: 0;
   max-width: 320px;
   padding: 10px 14px;
 
@@ -485,6 +485,7 @@ tbody tr:hover {
   }
 
   .search-bar {
+    width: 100%;
     max-width: none;
   }
 
@@ -618,5 +619,15 @@ tbody tr:hover {
 
   .modal-form {
     padding: 18px;
+  }
+
+  .search-bar {
+    padding: 9px 12px;
+    gap: 7px;
+  }
+
+  .search-bar svg {
+    width: 15px;
+    height: 15px;
   }
 }

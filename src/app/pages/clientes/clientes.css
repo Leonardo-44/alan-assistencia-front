@@ -56,7 +56,7 @@
   align-items: center;
   gap: 9px;
 
-  flex: 1 1 280px;
+  min-width: 0;
   max-width: 320px;
   padding: 10px 14px;
 
@@ -280,12 +280,6 @@ tbody tr:hover {
    RESPONSIVIDADE
 ========================= */
 
-@media (max-width: 1024px) {
-  .search-bar {
-    max-width: 100%;
-  }
-}
-
 @media (max-width: 700px) {
   .clientes-page {
     padding: 20px;
@@ -294,6 +288,11 @@ tbody tr:hover {
   .page-header {
     flex-direction: column;
     align-items: stretch;
+  }
+
+  .search-bar {
+    width: 100%;
+    max-width: none;
   }
 
   thead {
@@ -340,5 +339,15 @@ tbody tr:hover {
 
   .page-header h1 {
     font-size: 20px;
+  }
+
+  .search-bar {
+    padding: 9px 12px;
+    gap: 7px;
+  }
+
+  .search-bar svg {
+    width: 15px;
+    height: 15px;
   }
 }

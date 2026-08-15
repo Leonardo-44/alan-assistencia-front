@@ -1,0 +1,195 @@
+<div class="ordens-page">
+
+  <!-- HEADER -->
+  <header class="page-header">
+    <div>
+      <h1>Ordens de serviço</h1>
+      <p class="page-subtitle" *ngIf="!carregando && !erro">
+        {{ ordens.length }} ordem{{ ordens.length === 1 ? '' : 's' }} registrada{{ ordens.length === 1 ? '' : 's' }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <div class="search-bar" *ngIf="!erro && ordens.length > 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+        </svg>
+        <input type="text" placeholder="Buscar por cliente ou aparelho" [(ngModel)]="termoBusca" />
+      </div>
+
+      <button class="btn-primary" (click)="abrirModalNova()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+        </svg>
+        Nova Ordem
+      </button>
+    </div>
+  </header>
+
+  <!-- CARDS DE RESUMO (KPIs do Dono) -->
+  <div class="kpi-grid" *ngIf="!carregando && !erro && ordens.length > 0">
+    <div class="kpi-card">
+      <span class="kpi-title">Faturamento Concluído</span>
+      <span class="kpi-value positive">{{ totalConcluido | currency:'BRL' }}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-title">Em Aberto / Execução</span>
+      <span class="kpi-value warning">{{ totalEmAberto | currency:'BRL' }}</span>
+    </div>
+    <div class="kpi-card">
+      <span class="kpi-title">Aguardando Peça</span>
+      <span class="kpi-value danger">{{ contarPorStatus('AGUARDANDO_PECA') }} OS</span>
+    </div>
+  </div>
+
+  <!-- STATUS TABS -->
+  <div class="status-tabs" *ngIf="!carregando && !erro && ordens.length > 0">
+    <button
+      *ngFor="let aba of abas"
+      class="status-tab"
+      [class.ativo]="filtroStatus === aba.valor"
+      (click)="filtroStatus = aba.valor"
+    >
+      {{ aba.label }}
+      <span class="contador">{{ contarPorStatus(aba.valor) }}</span>
+    </button>
+  </div>
+
+  <!-- FEEDBACKS DE ESTADO -->
+  <div class="state-message" *ngIf="carregando">
+    <div class="spinner"></div>
+    <p>Carregando ordens de serviço...</p>
+  </div>
+
+  <div class="state-message error" *ngIf="erro && !carregando">
+    <p>Não foi possível carregar as ordens de serviço.</p>
+    <span>Verifique se o back-end está rodando e tente novamente.</span>
+    <button class="retry-button" (click)="carregarOrdens()">Tentar novamente</button>
+  </div>
+
+  <ng-container *ngIf="!carregando && !erro">
+
+    <div class="empty-state" *ngIf="ordens.length === 0">
+      <p>Nenhuma ordem de serviço registrada ainda.</p>
+      <span>Clique no botão acima para cadastrar a primeira ordem.</span>
+    </div>
+
+    <div class="empty-state" *ngIf="ordens.length > 0 && ordensFiltradas.length === 0">
+      <p>Nenum resultado encontrado</p>
+      <span>Ajuste a busca ou o filtro de status.</span>
+    </div>
+
+    <!-- TABELA PRINCIPAL -->
+    <div class="table-card" *ngIf="ordensFiltradas.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Aparelho</th>
+            <th>Defeito</th>
+            <th>Status</th>
+            <th>Valor</th>
+            <th>Entrada</th>
+            <th>Entrega</th>
+            <th class="text-right">Ações</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let os of ordensFiltradas">
+            <td data-label="Cliente" class="font-medium">{{ os.clienteNome }}</td>
+            <td data-label="Aparelho" class="muted">{{ os.aparelho }}</td>
+            <td data-label="Defeito" class="muted truncate">{{ os.defeito }}</td>
+            <td data-label="Status">
+              <!-- Select direto na tabela para mudar status rápido -->
+              <select 
+                class="status-select" 
+                [attr.data-status]="os.status"
+                [ngModel]="os.status" 
+                (ngModelChange)="alterarStatusRapido(os, $event)"
+              >
+                <option *ngFor="let option of statusOpcoes" [value]="option">
+                  {{ statusLabel(option) }}
+                </option>
+              </select>
+            </td>
+            <td data-label="Valor" class="mono">{{ os.valor ? (os.valor | currency:'BRL') : '—' }}</td>
+            <td data-label="Entrada" class="mono muted">{{ os.dataEntrada | date:'dd/MM/yy' }}</td>
+            <td data-label="Entrega" class="mono muted">
+              {{ os.dataEntrega ? (os.dataEntrega | date:'dd/MM/yy') : 'Em aberto' }}
+            </td>
+            <td data-label="Ações" class="text-right actions-cell">
+              <button class="icon-btn" title="Editar" (click)="abrirModalEdicao(os)">
+                ✏️
+              </button>
+              <button class="icon-btn danger" title="Excluir" (click)="excluirOrdem(os)">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+
+  <!-- MODAL: CADASTRAR / EDITAR OS -->
+  <div class="modal-backdrop" *ngIf="exibirModal" (click)="fecharModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ osEdicao.id ? 'Editar Ordem de Serviço' : 'Nova Ordem de Serviço' }}</h2>
+        <button class="close-btn" (click)="fecharModal()">&times;</button>
+      </div>
+
+      <form (ngSubmit)="salvarOrdem()" #osForm="ngForm">
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nome do Cliente *</label>
+            <input type="text" name="clienteNome" [(ngModel)]="osEdicao.clienteNome" required placeholder="Ex: João da Silva" />
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Aparelho *</label>
+              <input type="text" name="aparelho" [(ngModel)]="osEdicao.aparelho" required placeholder="Ex: iPhone 13 Pro" />
+            </div>
+
+            <div class="form-group">
+              <label>Valor (R$)</label>
+              <input type="number" step="0.01" name="valor" [(ngModel)]="osEdicao.valor" placeholder="0,00" />
+            </div>
+          </div>
+
+          <div class="form-group">
+            <label>Defeito Reclamado *</label>
+            <textarea name="defeito" [(ngModel)]="osEdicao.defeito" rows="3" required placeholder="Descreva o problema relatado pelo cliente..."></textarea>
+          </div>
+
+          <div class="form-row">
+            <div class="form-group">
+              <label>Status</label>
+              <select name="status" [(ngModel)]="osEdicao.status">
+                <option *ngFor="let option of statusOpcoes" [value]="option">
+                  {{ statusLabel(option) }}
+                </option>
+              </select>
+            </div>
+
+            <div class="form-group">
+              <label>Previsão / Data Entrega</label>
+              <input type="date" name="dataEntrega" [(ngModel)]="osEdicao.dataEntrega" />
+            </div>
+          </div>
+        </div>
+
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="fecharModal()">Cancelar</button>
+          <button type="submit" class="btn-primary" [disabled]="osForm.invalid || salvando">
+            {{ salvando ? 'Salvando...' : 'Salvar Ordem' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+</div>

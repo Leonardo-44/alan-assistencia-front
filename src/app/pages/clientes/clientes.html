@@ -1,0 +1,196 @@
+<div class="clientes-page">
+
+  <header class="page-header">
+
+    <div>
+      <h1>Clientes</h1>
+
+      <p
+        class="page-subtitle"
+        *ngIf="!carregando && !erro"
+      >
+        {{ clientes.length }}
+        cliente{{ clientes.length === 1 ? '' : 's' }}
+        cadastrado{{ clientes.length === 1 ? '' : 's' }}
+      </p>
+    </div>
+
+    <div
+      class="search-bar"
+      *ngIf="!erro && clientes.length > 0"
+    >
+
+      <svg
+        viewBox="0 0 24 24"
+        fill="none"
+        stroke="currentColor"
+        stroke-width="1.8"
+      >
+        <circle
+          cx="11"
+          cy="11"
+          r="7"
+        />
+
+        <path
+          d="M21 21l-4.3-4.3"
+          stroke-linecap="round"
+        />
+      </svg>
+
+      <input
+        type="text"
+        placeholder="Buscar por nome, telefone ou e-mail"
+        [(ngModel)]="termoBusca"
+      />
+
+    </div>
+
+  </header>
+
+
+  <!-- CARREGANDO -->
+
+  <div
+    class="state-message"
+    *ngIf="carregando"
+  >
+
+    <div class="spinner"></div>
+
+    <p>Carregando clientes...</p>
+
+  </div>
+
+
+  <!-- ERRO -->
+
+  <div
+    class="state-message error"
+    *ngIf="erro && !carregando"
+  >
+
+    <p>
+      Não foi possível carregar os clientes.
+    </p>
+
+    <span>
+      Verifique se o back-end está rodando e tente novamente.
+    </span>
+
+    <button
+      class="retry-button"
+      (click)="carregarClientes()"
+    >
+      Tentar novamente
+    </button>
+
+  </div>
+
+
+  <!-- CONTEÚDO -->
+
+  <ng-container *ngIf="!carregando && !erro">
+
+    <!-- NENHUM CLIENTE -->
+
+    <div
+      class="empty-state"
+      *ngIf="clientes.length === 0"
+    >
+
+      <p>
+        Nenhum cliente cadastrado ainda.
+      </p>
+
+      <span>
+        Os clientes cadastrados vão aparecer aqui.
+      </span>
+
+    </div>
+
+
+    <!-- NENHUM RESULTADO -->
+
+    <div
+      class="empty-state"
+      *ngIf="
+        clientes.length > 0 &&
+        clientesFiltrados.length === 0
+      "
+    >
+
+      <p>
+        Nenhum resultado para "{{ termoBusca }}"
+      </p>
+
+      <span>
+        Tente buscar por outro nome, telefone ou e-mail.
+      </span>
+
+    </div>
+
+
+    <!-- TABELA -->
+
+    <div
+      class="table-card"
+      *ngIf="clientesFiltrados.length > 0"
+    >
+
+      <table>
+
+        <thead>
+
+          <tr>
+            <th>Cliente</th>
+            <th>Telefone</th>
+            <th>E-mail</th>
+          </tr>
+
+        </thead>
+
+        <tbody>
+
+          <tr
+            *ngFor="let cliente of clientesFiltrados"
+          >
+
+            <td>
+
+              <div class="cliente-cell">
+
+                <span
+                  class="avatar"
+                  [class]="corAvatar(cliente.nome)"
+                >
+                  {{ iniciais(cliente.nome) }}
+                </span>
+
+                <span>
+                  {{ cliente.nome }}
+                </span>
+
+              </div>
+
+            </td>
+
+            <td class="mono muted">
+              {{ cliente.telefone || '—' }}
+            </td>
+
+            <td class="muted">
+              {{ cliente.email || '—' }}
+            </td>
+
+          </tr>
+
+        </tbody>
+
+      </table>
+
+    </div>
+
+  </ng-container>
+
+</div>

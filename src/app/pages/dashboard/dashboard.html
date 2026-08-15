@@ -1,0 +1,554 @@
+<div class="dashboard">
+
+  <!-- =========================
+       CARREGANDO
+       ========================= -->
+
+  <div
+    class="state-message"
+    *ngIf="carregando && !dados && !erro"
+  >
+    <div class="spinner"></div>
+
+    <p>Carregando dados do painel...</p>
+  </div>
+
+
+  <!-- =========================
+       ERRO
+       ========================= -->
+
+  <div
+    class="state-message error"
+    *ngIf="erro && !dados"
+  >
+    <p>Não foi possível carregar os dados do painel.</p>
+
+    <span>
+      Verifique se o back-end está rodando e tente novamente.
+    </span>
+
+    <button
+      class="retry-button"
+      type="button"
+      (click)="carregarDashboard()"
+    >
+      Tentar novamente
+    </button>
+  </div>
+
+
+  <!-- =========================
+       CONTEÚDO
+       ========================= -->
+
+  <ng-container *ngIf="dados">
+
+    <!-- HERO -->
+
+    <section class="hero-grid">
+
+      <!-- SALDO -->
+
+      <div class="hero-card">
+
+        <div class="hero-card-top">
+
+          <span class="hero-label">
+            Saldo em caixa
+          </span>
+
+          <span class="hero-icon">
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect
+                x="3"
+                y="6"
+                width="18"
+                height="13"
+                rx="2"
+              />
+
+              <path d="M3 10h18" />
+
+              <circle
+                cx="16"
+                cy="14.5"
+                r="1.4"
+                fill="currentColor"
+                stroke="none"
+              />
+            </svg>
+          </span>
+
+        </div>
+
+        <span class="hero-value">
+          {{ dados.resumoFinanceiro.saldo| currency:'BRL' }}
+        </span>
+
+        <div class="hero-split">
+
+          <div class="hero-split-item">
+
+            <span class="dot success"></span>
+
+            <span>Entradas</span>
+
+            <strong class="mono positivo">
+              {{ dados.resumoFinanceiro.totalEntradas | currency:'BRL' }}
+            </strong>
+
+          </div>
+
+          <div class="hero-split-item">
+
+            <span class="dot danger"></span>
+
+            <span>Saídas</span>
+
+            <strong class="mono negativo">
+              {{ dados.resumoFinanceiro.totalSaidas | currency:'BRL' }}
+            </strong>
+
+          </div>
+
+        </div>
+
+        <div class="hero-bar">
+
+          <div
+            class="hero-bar-fill"
+            [style.width.%]="entradasPercentual"
+          ></div>
+
+        </div>
+
+      </div>
+
+
+      <!-- MINI KPIs -->
+
+      <div class="mini-kpi-stack">
+
+        <div class="mini-kpi">
+
+          <span class="mini-kpi-icon">
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <rect
+                x="7"
+                y="2.5"
+                width="10"
+                height="19"
+                rx="2"
+              />
+
+              <path d="M11 18.5h2" />
+            </svg>
+
+          </span>
+
+          <div class="mini-kpi-text">
+
+            <span class="mini-kpi-label">
+              Faturamento em vendas
+            </span>
+
+            <span class="mini-kpi-value mono">
+              {{ dados.faturamentoVendas | currency:'BRL' }}
+            </span>
+
+          </div>
+
+        </div>
+
+
+        <div class="mini-kpi">
+
+          <span class="mini-kpi-icon">
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="1.8"
+            >
+              <circle
+                cx="9"
+                cy="8"
+                r="3.2"
+              />
+
+              <path
+                d="M3 20c0-3.3 2.7-6 6-6s6 2.7 6 6"
+              />
+            </svg>
+
+          </span>
+
+          <div class="mini-kpi-text">
+
+            <span class="mini-kpi-label">
+              Clientes cadastrados
+            </span>
+
+            <span class="mini-kpi-value mono">
+              {{ dados.totalClientes }}
+            </span>
+
+          </div>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- KPIs -->
+
+    <section class="kpi-grid">
+
+      <div class="kpi-card">
+
+        <span class="kpi-icon warning">
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path
+              d="M14.7 6.3a4 4 0 0 1-5.4 5.4L4 17l3 3 5.3-5.3a4 4 0 0 1 5.4-5.4l-2.6 2.6-2-2 2.6-2.6Z"
+            />
+          </svg>
+
+        </span>
+
+        <div class="kpi-text">
+
+          <span class="kpi-label">
+            Ordens em aberto
+          </span>
+
+          <span class="kpi-value mono">
+            {{ dados.ordensAbertas }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="kpi-card">
+
+        <span class="kpi-icon success">
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path
+              d="M5 13l4 4L19 7"
+              stroke-linecap="round"
+              stroke-linejoin="round"
+            />
+          </svg>
+
+        </span>
+
+        <div class="kpi-text">
+
+          <span class="kpi-label">
+            Ordens concluídas
+          </span>
+
+          <span class="kpi-value mono">
+            {{ dados.ordensConcluidas }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="kpi-card">
+
+        <span class="kpi-icon info">
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M4 5h16" />
+            <path d="M4 12h16" />
+            <path d="M4 19h10" />
+          </svg>
+
+        </span>
+
+        <div class="kpi-text">
+
+          <span class="kpi-label">
+            Total de ordens
+          </span>
+
+          <span class="kpi-value mono">
+            {{ dados.totalOrdensServico }}
+          </span>
+
+        </div>
+
+      </div>
+
+
+      <div class="kpi-card">
+
+        <span class="kpi-icon accent">
+
+          <svg
+            viewBox="0 0 24 24"
+            fill="none"
+            stroke="currentColor"
+            stroke-width="1.8"
+          >
+            <path d="M3 10h18l-2 9H5l-2-9Z" />
+            <path d="M8 10V7a4 4 0 0 1 8 0v3" />
+          </svg>
+
+        </span>
+
+        <div class="kpi-text">
+
+          <span class="kpi-label">
+            Total de vendas
+          </span>
+
+          <span class="kpi-value mono">
+            {{ dados.totalVendas }}
+          </span>
+
+        </div>
+
+      </div>
+
+    </section>
+
+
+    <!-- TABELAS -->
+
+    <section class="tables-grid">
+
+      <!-- ÚLTIMAS ORDENS -->
+
+      <div class="table-card">
+
+        <div class="table-card-header">
+
+          <h2>
+            Últimas ordens de serviço
+          </h2>
+
+          <a
+            routerLink="/ordens-servico"
+            class="ver-todos"
+          >
+            Ver todas
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M9 6l6 6-6 6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+
+          </a>
+
+        </div>
+
+
+        <table
+          *ngIf="
+            dados.ultimasOrdens &&
+            dados.ultimasOrdens.length > 0;
+            else vazioOrdens
+          "
+        >
+
+          <thead>
+
+            <tr>
+              <th>Cliente</th>
+              <th>Aparelho</th>
+              <th>Status</th>
+              <th>Entrada</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let os of dados.ultimasOrdens"
+            >
+
+              <td>
+                {{ os.clienteNome }}
+              </td>
+
+              <td class="muted">
+                {{ os.aparelho }}
+              </td>
+
+              <td>
+
+                <span
+                  class="badge"
+                  [attr.data-status]="os.status"
+                >
+                  {{ statusLabel(os.status) }}
+                </span>
+
+              </td>
+
+              <td class="mono muted">
+                {{ os.dataEntrada | date:'dd/MM/yy' }}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+
+        <ng-template #vazioOrdens>
+
+          <p class="empty">
+            Nenhuma ordem de serviço registrada ainda.
+          </p>
+
+        </ng-template>
+
+      </div>
+
+
+      <!-- ÚLTIMAS VENDAS -->
+
+      <div class="table-card">
+
+        <div class="table-card-header">
+
+          <h2>
+            Últimas vendas
+          </h2>
+
+          <a
+            routerLink="/vendas"
+            class="ver-todos"
+          >
+            Ver todas
+
+            <svg
+              viewBox="0 0 24 24"
+              fill="none"
+              stroke="currentColor"
+              stroke-width="2"
+            >
+              <path
+                d="M9 6l6 6-6 6"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+              />
+            </svg>
+
+          </a>
+
+        </div>
+
+
+        <table
+          *ngIf="
+            dados.ultimasVendas &&
+            dados.ultimasVendas.length > 0;
+            else vazioVendas
+          "
+        >
+
+          <thead>
+
+            <tr>
+              <th>Aparelho</th>
+              <th>Pagamento</th>
+              <th>Valor</th>
+              <th>Data</th>
+            </tr>
+
+          </thead>
+
+          <tbody>
+
+            <tr
+              *ngFor="let venda of dados.ultimasVendas"
+            >
+
+              <td>
+                {{ venda.aparelho }}
+              </td>
+
+              <td class="muted">
+                {{ venda.formaPagamento }}
+              </td>
+
+              <td class="mono">
+                {{ venda.valor | currency:'BRL' }}
+              </td>
+
+              <td class="mono muted">
+                {{ venda.dataVenda | date:'dd/MM/yy' }}
+              </td>
+
+            </tr>
+
+          </tbody>
+
+        </table>
+
+
+        <ng-template #vazioVendas>
+
+          <p class="empty">
+            Nenhuma venda registrada ainda.
+          </p>
+
+        </ng-template>
+
+      </div>
+
+    </section>
+
+  </ng-container>
+
+</div>
+

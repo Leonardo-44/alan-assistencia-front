@@ -1,0 +1,106 @@
+<div class="financeiro-page">
+  
+  <header class="page-header">
+    <h1>Financeiro</h1>
+    <p class="page-subtitle" *ngIf="!carregando && !erro">Movimentações de entrada e saída</p>
+  </header>
+
+  <div class="state-message" *ngIf="carregando">
+    <div class="spinner"></div>
+    <p>Carregando dados financeiros...</p>
+  </div>
+
+  <div class="state-message error" *ngIf="erro && !carregando">
+    <p>Não foi possível carregar os dados financeiros.</p>
+    <span>Verifique se o back-end está rodando e tente novamente.</span>
+    <button class="retry-button" (click)="carregarFinanceiro()">Tentar novamente</button>
+  </div>
+
+  <ng-container *ngIf="!carregando && !erro && resumo">
+
+    <section class="hero-card">
+      <div class="hero-card-top">
+        <span class="hero-label">Saldo em caixa</span>
+        <span class="hero-icon">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+            <rect x="3" y="6" width="18" height="13" rx="2"/>
+            <path d="M3 10h18"/>
+            <circle cx="16" cy="14.5" r="1.4" fill="currentColor" stroke="none"/>
+          </svg>
+        </span>
+      </div>
+
+      <span class="hero-value">{{ resumo.saldo | currency:'BRL' }}</span>
+
+      <div class="hero-split">
+        <div class="hero-split-item">
+          <span class="dot success"></span>
+          <span>Entradas</span>
+          <strong class="mono positivo">{{ resumo.totalEntradas | currency:'BRL' }}</strong>
+        </div>
+        <div class="hero-split-item">
+          <span class="dot danger"></span>
+          <span>Saídas</span>
+          <strong class="mono negativo">{{ resumo.totalSaidas | currency:'BRL' }}</strong>
+        </div>
+      </div>
+
+      <div class="hero-bar">
+        <div class="hero-bar-fill" [style.width.%]="percentualEntradas"></div>
+      </div>
+    </section>
+
+    <div class="tipo-tabs">
+      <button class="tipo-tab" [class.ativo]="filtroTipo === 'TODAS'" (click)="filtroTipo = 'TODAS'">
+        Todas
+      </button>
+      <button class="tipo-tab" [class.ativo]="filtroTipo === 'ENTRADA'" (click)="filtroTipo = 'ENTRADA'">
+        Entradas
+      </button>
+      <button class="tipo-tab" [class.ativo]="filtroTipo === 'SAIDA'" (click)="filtroTipo = 'SAIDA'">
+        Saídas
+      </button>
+    </div>
+
+    <div class="empty-state" *ngIf="movimentacoes.length === 0">
+      <p>Nenhuma movimentação registrada ainda.</p>
+      <span>As movimentações financeiras vão aparecer aqui.</span>
+    </div>
+
+    <div class="empty-state" *ngIf="movimentacoes.length > 0 && movimentacoesFiltradas.length === 0">
+      <p>Nenhuma movimentação nesse filtro</p>
+      <span>Tente outro tipo de movimentação.</span>
+    </div>
+
+    <div class="table-card" *ngIf="movimentacoesFiltradas.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Descrição</th>
+            <th>Tipo</th>
+            <th>Pagamento</th>
+            <th>Valor</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let mov of movimentacoesFiltradas">
+            <td data-label="Descrição">{{ mov.descricao }}</td>
+            <td data-label="Tipo">
+              <span class="badge" [attr.data-tipo]="mov.tipo">
+                {{ mov.tipo === 'ENTRADA' ? 'Entrada' : 'Saída' }}
+              </span>
+            </td>
+            <td data-label="Pagamento" class="muted">{{ mov.formaPagamento || '—' }}</td>
+            <td data-label="Valor" class="mono" [class.positivo]="mov.tipo === 'ENTRADA'" [class.negativo]="mov.tipo === 'SAIDA'">
+              {{ mov.tipo === 'ENTRADA' ? '+' : '−' }} {{ mov.valor | currency:'BRL' }}
+            </td>
+            <td data-label="Data" class="mono muted">{{ mov.dataMovimentacao | date:'dd/MM/yy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+
+</div>

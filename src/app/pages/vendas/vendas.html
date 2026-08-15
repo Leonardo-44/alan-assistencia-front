@@ -1,0 +1,208 @@
+<div class="vendas-page">
+
+  <header class="page-header">
+    <div>
+      <h1>Vendas</h1>
+      <p class="page-subtitle" *ngIf="!carregando && !erro">
+        {{ vendas.length }} venda{{ vendas.length === 1 ? '' : 's' }} registrada{{ vendas.length === 1 ? '' : 's' }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <div class="search-bar" *ngIf="!erro && vendas.length > 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="7"/>
+          <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+        </svg>
+        <input type="text" placeholder="Buscar por aparelho ou pagamento" [(ngModel)]="termoBusca" />
+      </div>
+
+      <button class="nova-venda-button" type="button" (click)="abrirModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round"/>
+        </svg>
+        Nova venda
+      </button>
+    </div>
+  </header>
+
+  <section class="resumo-grid" *ngIf="!carregando && !erro && vendas.length > 0">
+    <div class="resumo-card">
+      <span class="resumo-label">Total vendido</span>
+      <span class="resumo-value mono">{{ totalVendido | currency:'BRL' }}</span>
+    </div>
+    <div class="resumo-card">
+      <span class="resumo-label">Ticket médio</span>
+      <span class="resumo-value mono">{{ ticketMedio | currency:'BRL' }}</span>
+    </div>
+    <div class="resumo-card">
+      <span class="resumo-label">Vendas realizadas</span>
+      <span class="resumo-value mono">{{ vendas.length }}</span>
+    </div>
+  </section>
+
+  <div class="state-message" *ngIf="carregando">
+    <div class="spinner"></div>
+    <p>Carregando vendas...</p>
+  </div>
+
+  <div class="state-message error" *ngIf="erro && !carregando">
+    <p>Não foi possível carregar as vendas.</p>
+    <span>Verifique se o back-end está rodando e tente novamente.</span>
+    <button class="retry-button" (click)="carregarVendas()">Tentar novamente</button>
+  </div>
+
+  <ng-container *ngIf="!carregando && !erro">
+
+    <div class="empty-state" *ngIf="vendas.length === 0">
+      <p>Nenhuma venda registrada ainda.</p>
+      <span>Clique em "Nova venda" para cadastrar a primeira.</span>
+    </div>
+
+    <div class="empty-state" *ngIf="vendas.length > 0 && vendasFiltradas.length === 0">
+      <p>Nenhum resultado para "{{ termoBusca }}"</p>
+      <span>Tente buscar por outro aparelho ou forma de pagamento.</span>
+    </div>
+
+    <div class="table-card" *ngIf="vendasFiltradas.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Aparelho</th>
+            <th>Pagamento</th>
+            <th>Valor</th>
+            <th>Data</th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let venda of vendasFiltradas">
+            <td data-label="Aparelho">{{ venda.aparelho }}</td>
+            <td data-label="Pagamento" class="muted">{{ venda.formaPagamento }}</td>
+            <td data-label="Valor" class="mono positivo">{{ venda.valor | currency:'BRL' }}</td>
+            <td data-label="Data" class="mono muted">{{ venda.dataVenda | date:'dd/MM/yy' }}</td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+
+  </ng-container>
+
+</div>
+
+
+<!-- =========================
+     MODAL DE CADASTRO
+     ========================= -->
+
+<div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
+
+  <div class="modal-card" (click)="$event.stopPropagation()">
+
+    <div class="modal-header">
+      <h2>Nova venda</h2>
+      <button class="modal-close" type="button" (click)="fecharModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M6 6l12 12M18 6L6 18" stroke-linecap="round"/>
+        </svg>
+      </button>
+    </div>
+
+    <form #vendaForm="ngForm" (ngSubmit)="salvarVenda(vendaForm)" class="modal-form">
+
+      <div class="form-field">
+        <label for="aparelho">Aparelho *</label>
+        <input
+          id="aparelho"
+          name="aparelho"
+          type="text"
+          placeholder="Ex: iPhone 12 128GB"
+          [(ngModel)]="novaVenda.aparelho"
+          required
+          #aparelho="ngModel"
+        />
+        <span class="field-error" *ngIf="aparelho.invalid && aparelho.touched">
+          Informe o aparelho vendido.
+        </span>
+      </div>
+
+      <div class="form-field">
+        <label for="imei">IMEI</label>
+        <input
+          id="imei"
+          name="imei"
+          type="text"
+          placeholder="Opcional"
+          [(ngModel)]="novaVenda.imei"
+        />
+      </div>
+
+      <div class="form-row">
+
+        <div class="form-field">
+          <label for="valor">Valor *</label>
+          <input
+            id="valor"
+            name="valor"
+            type="number"
+            min="0.01"
+            step="0.01"
+            placeholder="0,00"
+            [(ngModel)]="novaVenda.valor"
+            required
+            #valor="ngModel"
+          />
+          <span class="field-error" *ngIf="valor.invalid && valor.touched">
+            Informe um valor válido.
+          </span>
+        </div>
+
+        <div class="form-field">
+          <label for="formaPagamento">Forma de pagamento *</label>
+          <select
+            id="formaPagamento"
+            name="formaPagamento"
+            [(ngModel)]="novaVenda.formaPagamento"
+            required
+            #formaPagamento="ngModel"
+          >
+            <option value="" disabled>Selecione</option>
+            <option *ngFor="let forma of formasPagamento" [value]="forma">
+              {{ forma }}
+            </option>
+          </select>
+          <span class="field-error" *ngIf="formaPagamento.invalid && formaPagamento.touched">
+            Selecione a forma de pagamento.
+          </span>
+        </div>
+
+      </div>
+
+      <div class="form-field">
+        <label for="clienteId">ID do cliente</label>
+        <input
+          id="clienteId"
+          name="clienteId"
+          type="number"
+          placeholder="Opcional"
+          [(ngModel)]="novaVenda.clienteId"
+        />
+      </div>
+
+      <p class="modal-erro" *ngIf="erroSalvar">
+        Não foi possível salvar a venda. Tente novamente.
+      </p>
+
+      <div class="modal-actions">
+        <button class="cancelar-button" type="button" (click)="fecharModal()">
+          Cancelar
+        </button>
+        <button class="salvar-button" type="submit" [disabled]="vendaForm.invalid || salvando">
+          {{ salvando ? 'Salvando...' : 'Salvar venda' }}
+        </button>
+      </div>
+
+    </form>
+
+  </div>
+
+</div>

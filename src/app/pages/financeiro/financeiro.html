@@ -1,8 +1,18 @@
 <div class="financeiro-page">
-  
+
   <header class="page-header">
-    <h1>Financeiro</h1>
-    <p class="page-subtitle" *ngIf="!carregando && !erro">Movimentações de entrada e saída</p>
+    <div>
+      <h1>Financeiro</h1>
+      <p class="page-subtitle" *ngIf="!carregando && !erro">Movimentações de entrada e saída</p>
+    </div>
+
+    <button class="nova-despesa-button" *ngIf="!carregando && !erro" (click)="abrirModal()">
+      <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+        <line x1="12" y1="5" x2="12" y2="19"/>
+        <line x1="5" y1="12" x2="19" y2="12"/>
+      </svg>
+      Nova despesa
+    </button>
   </header>
 
   <div class="state-message" *ngIf="carregando">
@@ -50,6 +60,40 @@
       </div>
     </section>
 
+    <!-- ABAS DE PERÍODO -->
+    <div class="periodo-tabs">
+      <button
+        *ngFor="let p of periodos"
+        class="periodo-tab"
+        [class.ativo]="filtroPeriodo === p.valor"
+        (click)="filtroPeriodo = p.valor"
+      >
+        {{ p.label }}
+      </button>
+    </div>
+
+    <!-- RESUMO DO PERÍODO SELECIONADO -->
+    <div class="periodo-resumo">
+      <div class="periodo-resumo-item">
+        <span class="periodo-resumo-label">Entradas</span>
+        <span class="periodo-resumo-value positivo">{{ resumoPeriodoAtual.entradas | currency:'BRL' }}</span>
+      </div>
+      <div class="periodo-resumo-item">
+        <span class="periodo-resumo-label">Saídas</span>
+        <span class="periodo-resumo-value negativo">{{ resumoPeriodoAtual.saidas | currency:'BRL' }}</span>
+      </div>
+      <div class="periodo-resumo-item">
+        <span class="periodo-resumo-label">Saldo</span>
+        <span
+          class="periodo-resumo-value"
+          [class.positivo]="resumoPeriodoAtual.saldo >= 0"
+          [class.negativo]="resumoPeriodoAtual.saldo < 0"
+        >
+          {{ resumoPeriodoAtual.saldo | currency:'BRL' }}
+        </span>
+      </div>
+    </div>
+
     <div class="tipo-tabs">
       <button class="tipo-tab" [class.ativo]="filtroTipo === 'TODAS'" (click)="filtroTipo = 'TODAS'">
         Todas
@@ -81,6 +125,7 @@
             <th>Pagamento</th>
             <th>Valor</th>
             <th>Data</th>
+            <th></th>
           </tr>
         </thead>
         <tbody>
@@ -96,11 +141,192 @@
               {{ mov.tipo === 'ENTRADA' ? '+' : '−' }} {{ mov.valor | currency:'BRL' }}
             </td>
             <td data-label="Data" class="mono muted">{{ mov.dataMovimentacao | date:'dd/MM/yy' }}</td>
+
+            <td data-label="" class="acoes-cell">
+              <ng-container *ngIf="confirmandoExclusaoId !== mov.id; else confirmacao">
+                <button class="icon-button" title="Editar" (click)="abrirEdicao(mov)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <path d="M11 4H4a2 2 0 0 0-2 2v14a2 2 0 0 0 2 2h14a2 2 0 0 0 2-2v-7"/>
+                    <path d="M18.5 2.5a2.121 2.121 0 0 1 3 3L12 15l-4 1 1-4 9.5-9.5z"/>
+                  </svg>
+                </button>
+
+                <button class="icon-button danger" title="Excluir" (click)="pedirConfirmacaoExclusao(mov.id)">
+                  <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+                    <polyline points="3 6 5 6 21 6"/>
+                    <path d="M19 6l-1 14a2 2 0 0 1-2 2H8a2 2 0 0 1-2-2L5 6m3 0V4a2 2 0 0 1 2-2h4a2 2 0 0 1 2 2v2"/>
+                  </svg>
+                </button>
+              </ng-container>
+
+              <ng-template #confirmacao>
+                <div class="confirmacao-inline">
+                  <span>Excluir?</span>
+                  <button
+                    class="confirmar-button"
+                    [disabled]="excluindoId === mov.id"
+                    (click)="confirmarExclusao(mov)"
+                  >
+                    {{ excluindoId === mov.id ? '...' : 'Sim' }}
+                  </button>
+                  <button class="cancelar-inline-button" (click)="cancelarExclusao()">Não</button>
+                </div>
+              </ng-template>
+            </td>
           </tr>
         </tbody>
       </table>
     </div>
 
   </ng-container>
+
+  <!-- MODAL: NOVA DESPESA -->
+  <div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Nova despesa</h2>
+        <button class="modal-close" (click)="fecharModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form class="modal-form" #despesaForm="ngForm" (ngSubmit)="salvarDespesa(despesaForm)">
+        <div class="form-field">
+          <label for="categoria">Categoria</label>
+          <select
+            id="categoria"
+            name="categoria"
+            [(ngModel)]="novaDespesa.categoria"
+            required
+          >
+            <option value="" disabled>Selecione</option>
+            <option *ngFor="let cat of categorias" [value]="cat">{{ cat }}</option>
+          </select>
+        </div>
+
+        <div class="form-field">
+          <label for="detalhe">Detalhe (opcional)</label>
+          <input
+            id="detalhe"
+            type="text"
+            name="detalhe"
+            [(ngModel)]="novaDespesa.detalhe"
+            placeholder="Ex: Compra de tela iPhone 12"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="valor">Valor</label>
+            <input
+              id="valor"
+              type="number"
+              name="valor"
+              min="0.01"
+              step="0.01"
+              [(ngModel)]="novaDespesa.valor"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="formaPagamento">Forma de pagamento</label>
+            <select
+              id="formaPagamento"
+              name="formaPagamento"
+              [(ngModel)]="novaDespesa.formaPagamento"
+            >
+              <option value="">Não informado</option>
+              <option *ngFor="let forma of formasPagamento" [value]="forma">{{ forma }}</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="modal-erro" *ngIf="erroSalvar">
+          Não foi possível salvar a despesa. Tente novamente.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancelar-button" (click)="fecharModal()">Cancelar</button>
+          <button type="submit" class="salvar-button" [disabled]="salvando">
+            {{ salvando ? 'Salvando...' : 'Salvar despesa' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EDITAR MOVIMENTAÇÃO -->
+  <div class="modal-overlay" *ngIf="modalEdicaoAberto" (click)="fecharEdicao()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Editar movimentação</h2>
+        <button class="modal-close" (click)="fecharEdicao()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18"/>
+            <line x1="6" y1="6" x2="18" y2="18"/>
+          </svg>
+        </button>
+      </div>
+
+      <form class="modal-form" #edicaoForm="ngForm" (ngSubmit)="salvarEdicao(edicaoForm)" *ngIf="movimentacaoEditando">
+        <span class="badge tipo-fixo" [attr.data-tipo]="movimentacaoEditando.tipo">
+          {{ movimentacaoEditando.tipo === 'ENTRADA' ? 'Entrada' : 'Saída' }}
+        </span>
+
+        <div class="form-field">
+          <label for="edDescricao">Descrição</label>
+          <input
+            id="edDescricao"
+            type="text"
+            name="descricao"
+            [(ngModel)]="edicao.descricao"
+            required
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="edValor">Valor</label>
+            <input
+              id="edValor"
+              type="number"
+              name="valor"
+              min="0.01"
+              step="0.01"
+              [(ngModel)]="edicao.valor"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="edFormaPagamento">Forma de pagamento</label>
+            <select
+              id="edFormaPagamento"
+              name="formaPagamento"
+              [(ngModel)]="edicao.formaPagamento"
+            >
+              <option value="">Não informado</option>
+              <option *ngFor="let forma of formasPagamento" [value]="forma">{{ forma }}</option>
+            </select>
+          </div>
+        </div>
+
+        <p class="modal-erro" *ngIf="erroEdicao">
+          Não foi possível salvar as alterações. Tente novamente.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancelar-button" (click)="fecharEdicao()">Cancelar</button>
+          <button type="submit" class="salvar-button" [disabled]="salvandoEdicao">
+            {{ salvandoEdicao ? 'Salvando...' : 'Salvar alterações' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 
 </div>

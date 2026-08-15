@@ -54,3 +54,11 @@ export interface Garantia {
   garantiaInicial: string | null;
   garantiaFim: string | null;
 }
+
+export interface ComprovanteRequest {
+  nomeProduto?: string;
+  nomeCliente?: string;
+  servicoRealizado?: string;
+  valor?: number;
+  garantiaDias?: number;
+}

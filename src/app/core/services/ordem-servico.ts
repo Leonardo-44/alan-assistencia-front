@@ -8,6 +8,7 @@ import {
   Garantia,
   OrdemServico,
   OrdemServicoRequest,
+  ComprovanteRequest,
 } from '../models/ordem-servico/ordem-servico-module';
 
 @Injectable({
@@ -61,4 +62,12 @@ export class OrdemServicoService {
       )
       .pipe(timeout(10000));
   }
+
+  gerarComprovantePdf(id: number, dados: ComprovanteRequest): Observable<Blob> {
+  return this.http
+    .post(`${this.baseUrl}/${id}/comprovante-pdf`, dados, {
+      responseType: 'blob',
+    })
+    .pipe(timeout(15000));
+}
 }

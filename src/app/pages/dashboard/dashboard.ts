@@ -55,7 +55,7 @@ export class Dashboard implements OnInit {
 
     this.dashboardService.obterDashboard().subscribe({
       next: (dados) => {
-        console.log('Dashboard carregado:', dados);
+        // console.log('Dashboard carregado:', dados);
 
         this.dados = dados;
 
@@ -70,7 +70,7 @@ export class Dashboard implements OnInit {
       },
 
       error: (erro) => {
-        console.error('Erro ao carregar dashboard:', erro);
+        // console.error('Erro ao carregar dashboard:', erro);
 
         this.dados = null;
         this.entradasPercentual = 0;

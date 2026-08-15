@@ -48,7 +48,7 @@ export class Clientes implements OnInit {
 
     this.clienteService.listarTodos().subscribe({
       next: (dados) => {
-        console.log('Clientes recebidos:', dados);
+        // console.log('Clientes recebidos:', dados);
 
         this.clientes = dados;
         this.carregando = false;
@@ -59,7 +59,7 @@ export class Clientes implements OnInit {
       },
 
       error: (erro) => {
-        console.error('ERRO AO BUSCAR CLIENTES:', erro);
+        // console.error('ERRO AO BUSCAR CLIENTES:', erro);
 
         this.erro = true;
         this.carregando = false;

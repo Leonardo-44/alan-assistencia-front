@@ -527,6 +527,86 @@ tbody tr:hover {
   }
 }
 
+/* =========================
+   BADGE DE STATUS DE PAGAMENTO
+========================= */
+
+.badge[data-status-pagamento="PAGO"] {
+  background: var(--success-soft);
+  color: var(--success);
+}
+
+.badge[data-status-pagamento="PARCIAL"] {
+  background: var(--warning-soft);
+  color: var(--warning);
+}
+
+.badge[data-status-pagamento="PENDENTE"] {
+  background: var(--danger-soft);
+  color: var(--danger);
+}
+
+/* Reaproveita o mesmo estilo de badge das outras páginas */
+.badge {
+  display: inline-block;
+  white-space: nowrap;
+  padding: 4px 10px;
+  border-radius: 999px;
+  font-size: 11px;
+  font-weight: 600;
+}
+
+/* =========================
+   BOTÃO REGISTRAR PAGAMENTO
+========================= */
+
+.pagar-button {
+  padding: 6px 12px;
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: transparent;
+
+  font-size: 12px;
+  font-weight: 600;
+  color: var(--accent-hover);
+
+  cursor: pointer;
+  white-space: nowrap;
+
+  transition: background 0.15s ease, border-color 0.15s ease;
+}
+
+.pagar-button:hover {
+  background: var(--accent-soft);
+  border-color: var(--accent);
+}
+
+/* =========================
+   MODAL DE PAGAMENTO (menor)
+========================= */
+
+.modal-card-sm {
+  max-width: 380px;
+}
+
+.pagamento-resumo {
+  display: flex;
+  flex-direction: column;
+  gap: 4px;
+
+  margin: 0 0 6px;
+
+  font-size: 14px;
+  font-weight: 600;
+  color: var(--text-primary);
+}
+
+.pagamento-resumo .muted {
+  font-size: 13px;
+  font-weight: 500;
+}
+
 @media (max-width: 480px) {
   .page-header h1 {
     font-size: 20px;

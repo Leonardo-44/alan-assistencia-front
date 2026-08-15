@@ -15,7 +15,16 @@ import {
 export class VendaService {
   private readonly baseUrl = `${environment.apiUrl}/vendas`;
 
-  constructor(private http: HttpClient) {}
+  constructor(private http: HttpClient) { }
+
+  registrarPagamento(
+    id: number,
+    valor: number
+  ): Observable<Venda> {
+    return this.http
+      .patch<Venda>(`${this.baseUrl}/${id}/pagamento`, { valor })
+      .pipe(timeout(10000));
+  }
 
   listarTodos(): Observable<Venda[]> {
     return this.http

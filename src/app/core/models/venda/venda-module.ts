@@ -1,3 +1,5 @@
+export type StatusPagamento = 'PAGO' | 'PARCIAL' | 'PENDENTE';
+
 // Espelha VendaResponseDTO
 export interface Venda {
   id: number;
@@ -5,6 +7,9 @@ export interface Venda {
   aparelho: string;
   imei: string | null;
   valor: number;
+  valorPago: number;
+  valorRestante: number;
+  statusPagamento: StatusPagamento;
   formaPagamento: string;
   dataVenda: string;
 }
@@ -15,5 +20,6 @@ export interface VendaRequest {
   aparelho: string;
   imei?: string;
   valor: number;
+  valorPago?: number;
   formaPagamento: string;
 }

@@ -4,7 +4,7 @@
     <div>
       <h1>Vendas</h1>
       <p class="page-subtitle" *ngIf="!carregando && !erro">
-        {{ vendas.length }} venda{{ vendas.length === 1 ? '' : 's' }} registrada{{ vendas.length === 1 ? '' : 's' }}
+        {{ vendasNoPeriodo.length }} venda{{ vendasNoPeriodo.length === 1 ? '' : 's' }} no período selecionado
       </p>
     </div>
 
@@ -26,6 +26,37 @@
       </button>
     </div>
   </header>
+
+  <!-- FILTRO DE PERÍODO -->
+  <div class="periodo-bar" *ngIf="!erro && vendas.length > 0">
+
+    <div class="periodo-tabs">
+      <button
+        *ngFor="let periodo of periodos"
+        type="button"
+        class="periodo-tab"
+        [class.active]="periodoSelecionado === periodo.id"
+        (click)="selecionarPeriodo(periodo.id)"
+      >
+        {{ periodo.label }}
+      </button>
+    </div>
+
+    <div class="periodo-custom" *ngIf="periodoSelecionado === 'personalizado'">
+      <input
+        type="date"
+        [(ngModel)]="dataInicioPersonalizada"
+        name="dataInicioPersonalizada"
+      />
+      <span class="muted">até</span>
+      <input
+        type="date"
+        [(ngModel)]="dataFimPersonalizada"
+        name="dataFimPersonalizada"
+      />
+    </div>
+
+  </div>
 
   <div class="resumo-grid" *ngIf="!carregando && !erro && vendas.length > 0">
     <div class="resumo-card">
@@ -62,7 +93,7 @@
 
     <div class="empty-state" *ngIf="vendas.length > 0 && vendasFiltradas.length === 0">
       <p>Nenhum resultado encontrado</p>
-      <span>Ajuste a busca.</span>
+      <span>Ajuste a busca ou o período selecionado.</span>
     </div>
 
     <div class="table-card" *ngIf="vendasFiltradas.length > 0">

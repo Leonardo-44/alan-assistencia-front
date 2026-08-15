@@ -6,6 +6,8 @@ import { finalize } from 'rxjs';
 import { VendaService } from '../../core/services/venda';
 import { Venda, VendaRequest, StatusPagamento } from '../../core/models/venda/venda-module';
 
+type PeriodoId = 'hoje' | '7dias' | 'mes' | 'personalizado';
+
 @Component({
   selector: 'app-vendas',
   standalone: true,
@@ -39,33 +41,86 @@ export class Vendas implements OnInit {
   };
 
   // =========================
-  // MODAL DE CADASTRO
+  // FILTRO DE PERÍODO
   // =========================
 
-  modalAberto = false;
-  salvando = false;
-  erroSalvar = false;
-
-  novaVenda: VendaRequest = this.vendaVazia();
-
-  readonly formasPagamento = [
-    'Dinheiro',
-    'Pix',
-    'Cartão de Crédito',
-    'Cartão de Débito',
-    'Boleto',
+  readonly periodos: { id: PeriodoId; label: string }[] = [
+    { id: 'hoje', label: 'Hoje' },
+    { id: '7dias', label: '7 dias' },
+    { id: 'mes', label: 'Este mês' },
+    { id: 'personalizado', label: 'Personalizado' },
   ];
 
-  // =========================
-  // MODAL DE PAGAMENTO
-  // =========================
+  periodoSelecionado: PeriodoId = 'mes';
 
-  modalPagamentoAberto = false;
-  salvandoPagamento = false;
-  erroPagamento = '';
+  dataInicioPersonalizada = '';
+  dataFimPersonalizada = '';
 
-  vendaSelecionada: Venda | null = null;
-  valorPagamento: number | null = null;
+  selecionarPeriodo(periodo: PeriodoId): void {
+    this.periodoSelecionado = periodo;
+  }
+
+  private inicioDoDia(data: Date): Date {
+    const d = new Date(data);
+    d.setHours(0, 0, 0, 0);
+    return d;
+  }
+
+  private fimDoDia(data: Date): Date {
+    const d = new Date(data);
+    d.setHours(23, 59, 59, 999);
+    return d;
+  }
+
+  private intervaloPeriodo(): { inicio: Date; fim: Date } | null {
+    const hoje = new Date();
+
+    switch (this.periodoSelecionado) {
+      case 'hoje':
+        return { inicio: this.inicioDoDia(hoje), fim: this.fimDoDia(hoje) };
+
+      case '7dias': {
+        const inicio = new Date(hoje);
+        inicio.setDate(inicio.getDate() - 6);
+        return { inicio: this.inicioDoDia(inicio), fim: this.fimDoDia(hoje) };
+      }
+
+      case 'mes': {
+        const inicio = new Date(hoje.getFullYear(), hoje.getMonth(), 1);
+        return { inicio: this.inicioDoDia(inicio), fim: this.fimDoDia(hoje) };
+      }
+
+      case 'personalizado': {
+        if (!this.dataInicioPersonalizada || !this.dataFimPersonalizada) {
+          return null;
+        }
+
+        const inicio = new Date(`${this.dataInicioPersonalizada}T00:00:00`);
+        const fim = new Date(`${this.dataFimPersonalizada}T23:59:59`);
+        return { inicio, fim };
+      }
+
+      default:
+        return null;
+    }
+  }
+
+  get vendasNoPeriodo(): Venda[] {
+    const intervalo = this.intervaloPeriodo();
+
+    if (!intervalo) {
+      return this.vendas;
+    }
+
+    return this.vendas.filter((venda) => {
+      if (!venda.dataVenda) {
+        return false;
+      }
+
+      const data = new Date(venda.dataVenda);
+      return data >= intervalo.inicio && data <= intervalo.fim;
+    });
+  }
 
   ngOnInit(): void {
     this.carregarVendas();
@@ -101,12 +156,13 @@ export class Vendas implements OnInit {
   get vendasFiltradas(): Venda[] {
 
     const termo = this.termoBusca.trim().toLowerCase();
+    const base = this.vendasNoPeriodo;
 
     if (!termo) {
-      return this.vendas;
+      return base;
     }
 
-    return this.vendas.filter(
+    return base.filter(
       (venda) =>
         venda.aparelho?.toLowerCase().includes(termo) ||
         venda.formaPagamento?.toLowerCase().includes(termo)
@@ -114,24 +170,24 @@ export class Vendas implements OnInit {
   }
 
   get totalVendido(): number {
-    return this.vendas.reduce(
+    return this.vendasNoPeriodo.reduce(
       (total, venda) => total + (venda.valor ?? 0),
       0
     );
   }
 
   get totalAReceber(): number {
-    return this.vendas.reduce(
+    return this.vendasNoPeriodo.reduce(
       (total, venda) => total + (venda.valorRestante ?? 0),
       0
     );
   }
 
   get ticketMedio(): number {
-    if (!this.vendas.length) {
+    if (!this.vendasNoPeriodo.length) {
       return 0;
     }
-    return this.totalVendido / this.vendas.length;
+    return this.totalVendido / this.vendasNoPeriodo.length;
   }
 
   statusLabel(status: StatusPagamento): string {
@@ -141,6 +197,20 @@ export class Vendas implements OnInit {
   // =========================
   // MODAL DE CADASTRO
   // =========================
+
+  modalAberto = false;
+  salvando = false;
+  erroSalvar = false;
+
+  novaVenda: VendaRequest = this.vendaVazia();
+
+  readonly formasPagamento = [
+    'Dinheiro',
+    'Pix',
+    'Cartão de Crédito',
+    'Cartão de Débito',
+    'Boleto',
+  ];
 
   private vendaVazia(): VendaRequest {
     return {
@@ -202,6 +272,13 @@ export class Vendas implements OnInit {
   // =========================
   // MODAL DE PAGAMENTO
   // =========================
+
+  modalPagamentoAberto = false;
+  salvandoPagamento = false;
+  erroPagamento = '';
+
+  vendaSelecionada: Venda | null = null;
+  valorPagamento: number | null = null;
 
   abrirModalPagamento(venda: Venda): void {
     this.vendaSelecionada = venda;

@@ -4,6 +4,8 @@ import { FormsModule } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { OrdemServicoService } from '../../core/services/ordem-servico';
+import { ClienteService } from '../../core/services/cliente'; // ajuste o path se necessário
+import { Cliente } from '../../core/models/cliente/cliente-module'; // ajuste o path se necessário
 import {
   OrdemServico,
   StatusOrdemServico,
@@ -28,9 +30,11 @@ type FiltroStatus = StatusOrdemServico | 'TODAS';
 export class OrdensServico implements OnInit {
 
   private readonly ordemServicoService = inject(OrdemServicoService);
+  private readonly clienteService = inject(ClienteService);
   private readonly cdr = inject(ChangeDetectorRef);
 
   ordens: OrdemServico[] = [];
+  clientes: Cliente[] = [];
   carregando = false;
   salvando = false;
   erro = false;
@@ -98,6 +102,7 @@ export class OrdensServico implements OnInit {
 
   ngOnInit(): void {
     this.carregarOrdens();
+    this.carregarClientes();
   }
 
   // ==========================================
@@ -132,6 +137,22 @@ export class OrdensServico implements OnInit {
   }
 
   // ==========================================
+  // CARREGAR CLIENTES
+  // ==========================================
+
+  carregarClientes(): void {
+    this.clienteService.listarTodos().subscribe({
+      next: (dados) => {
+        this.clientes = dados ?? [];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar clientes:', err);
+      },
+    });
+  }
+
+  // ==========================================
   // MODAL DE CRIAÇÃO / EDIÇÃO
   // ==========================================
 
@@ -161,12 +182,22 @@ export class OrdensServico implements OnInit {
   }
 
   // ==========================================
+  // CLIENTE SELECIONADO NO FORM
+  // ==========================================
+
+  onClienteSelecionado(clienteId: number): void {
+    const cliente = this.clientes.find(c => c.id === clienteId);
+    this.osEdicao.clienteId = clienteId;
+    this.osEdicao.clienteNome = cliente?.nome ?? '';
+  }
+
+  // ==========================================
   // SALVAR ORDEM
   // ==========================================
 
   salvarOrdem(): void {
     if (
-      !this.osEdicao.clienteNome ||
+      !this.osEdicao.clienteId ||
       !this.osEdicao.aparelho ||
       !this.osEdicao.defeito
     ) {
@@ -512,6 +543,7 @@ export class OrdensServico implements OnInit {
 
   private criarNovaOSObj(): Partial<OrdemServico> {
     return {
+      clienteId: undefined,
       clienteNome: '',
       aparelho: '',
       defeito: '',

@@ -9,7 +9,7 @@ import { NgIf, NgFor } from '@angular/common';
 import { FormsModule } from '@angular/forms';
 
 import { ClienteService } from '../../core/services/cliente';
-import { Cliente } from '../../core/models/cliente/cliente-module';
+import { Cliente, ClienteRequest } from '../../core/models/cliente/cliente-module';
 
 @Component({
   selector: 'app-clientes',
@@ -28,6 +28,16 @@ export class Clientes implements OnInit {
   carregando = false;
   erro = false;
   termoBusca = '';
+
+  modalAberto = false;
+  salvando = false;
+  erroSalvar = false;
+
+  novoCliente: ClienteRequest = {
+    nome: '',
+    telefone: '',
+    email: '',
+  };
 
   private readonly coresAvatar = [
     'av-1',
@@ -48,23 +58,17 @@ export class Clientes implements OnInit {
 
     this.clienteService.listarTodos().subscribe({
       next: (dados) => {
-        // console.log('Clientes recebidos:', dados);
-
         this.clientes = dados;
         this.carregando = false;
         this.erro = false;
 
-        // Força o Angular a atualizar a tela imediatamente.
         this.cdr.detectChanges();
       },
 
       error: (erro) => {
-        // console.error('ERRO AO BUSCAR CLIENTES:', erro);
-
         this.erro = true;
         this.carregando = false;
 
-        // Força a atualização da tela também em caso de erro.
         this.cdr.detectChanges();
       },
 
@@ -123,5 +127,82 @@ export class Clientes implements OnInit {
       soma % this.coresAvatar.length
     ];
   }
-}
 
+  formatarTelefone(event: Event): void {
+    const input = event.target as HTMLInputElement;
+    let digitos = input.value.replace(/\D/g, '').slice(0, 11);
+
+    if (digitos.length > 10) {
+      digitos = digitos.replace(/^(\d{2})(\d{5})(\d{0,4}).*/, '($1) $2-$3');
+    } else if (digitos.length > 6) {
+      digitos = digitos.replace(/^(\d{2})(\d{4})(\d{0,4}).*/, '($1) $2-$3');
+    } else if (digitos.length > 2) {
+      digitos = digitos.replace(/^(\d{2})(\d{0,5})/, '($1) $2');
+    } else if (digitos.length > 0) {
+      digitos = digitos.replace(/^(\d*)/, '($1');
+    }
+
+    this.novoCliente.telefone = digitos;
+    input.value = digitos;
+  }
+
+  formatarTelefoneExibicao(telefone: string): string {
+    if (!telefone) {
+      return '—';
+    }
+
+    const digitos = telefone.replace(/\D/g, '');
+
+    if (digitos.length === 11) {
+      return digitos.replace(/^(\d{2})(\d{5})(\d{4})$/, '($1) $2-$3');
+    }
+
+    if (digitos.length === 10) {
+      return digitos.replace(/^(\d{2})(\d{4})(\d{4})$/, '($1) $2-$3');
+    }
+
+    return telefone;
+  }
+
+  abrirModal(): void {
+    this.novoCliente = { nome: '', telefone: '', email: '' };
+    this.erroSalvar = false;
+    this.modalAberto = true;
+  }
+
+  fecharModal(): void {
+    this.modalAberto = false;
+  }
+
+  salvarCliente(): void {
+    if (!this.novoCliente.nome?.trim()) {
+      return;
+    }
+
+    this.salvando = true;
+    this.erroSalvar = false;
+
+    const dto: ClienteRequest = {
+      nome: this.novoCliente.nome.trim(),
+      telefone: this.novoCliente.telefone?.trim() || '',
+      email: this.novoCliente.email?.trim() || '',
+    };
+
+    this.clienteService.salvar(dto).subscribe({
+      next: (clienteCriado) => {
+        this.clientes = [...this.clientes, clienteCriado];
+        this.salvando = false;
+        this.modalAberto = false;
+
+        this.cdr.detectChanges();
+      },
+
+      error: () => {
+        this.erroSalvar = true;
+        this.salvando = false;
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+}

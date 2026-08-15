@@ -65,7 +65,7 @@ export class OrdemServicoService {
 
   gerarComprovantePdf(id: number, dados: ComprovanteRequest): Observable<Blob> {
   return this.http
-    .post(`${this.baseUrl}/${id}/comprovante-pdf`, dados, {
+    .post(`${this.baseUrl}/${id}/comprovante`, dados, {   // <- sem "-pdf"
       responseType: 'blob',
     })
     .pipe(timeout(15000));

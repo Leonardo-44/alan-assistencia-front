@@ -10,5 +10,5 @@ export interface Cliente {
 export interface ClienteRequest {
   nome: string;
   telefone: string;
-  email: string;
+  email?: string; // agora opcional
 }

@@ -608,6 +608,97 @@ tbody tr:hover {
   font-weight: 500;
 }
 
+/* =========================
+   BARRA DE PERÍODO
+========================= */
+
+.periodo-bar {
+  display: flex;
+  align-items: center;
+  gap: 14px;
+  flex-wrap: wrap;
+
+  margin-bottom: 18px;
+}
+
+.periodo-tabs {
+  display: inline-flex;
+  gap: 4px;
+
+  padding: 4px;
+
+  background: var(--surface);
+  border: 1px solid var(--border);
+  border-radius: 10px;
+}
+
+.periodo-tab {
+  padding: 7px 14px;
+
+  border: none;
+  border-radius: 7px;
+  background: transparent;
+
+  font-size: 12.5px;
+  font-weight: 600;
+  color: var(--text-muted);
+
+  cursor: pointer;
+  white-space: nowrap;
+  transition: background 0.15s ease, color 0.15s ease;
+}
+
+.periodo-tab:hover {
+  color: var(--text-primary);
+}
+
+.periodo-tab.active {
+  background: var(--accent);
+  color: #ffffff;
+}
+
+.periodo-custom {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.periodo-custom input[type="date"] {
+  padding: 8px 10px;
+
+  border: 1px solid var(--border);
+  border-radius: 8px;
+  background: var(--surface);
+
+  font-size: 13px;
+  color: var(--text-primary);
+  outline: none;
+}
+
+.periodo-custom input[type="date"]:focus {
+  border-color: var(--accent);
+}
+
+@media (max-width: 700px) {
+  .periodo-bar {
+    flex-direction: column;
+    align-items: stretch;
+  }
+
+  .periodo-tabs {
+    justify-content: space-between;
+  }
+
+  .periodo-custom {
+    justify-content: space-between;
+  }
+
+  .periodo-custom input[type="date"] {
+    flex: 1;
+    min-width: 0;
+  }
+}
+
 @media (max-width: 480px) {
   .page-header h1 {
     font-size: 20px;

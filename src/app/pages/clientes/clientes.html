@@ -1,196 +1,180 @@
 <div class="clientes-page">
-
   <header class="page-header">
-
     <div>
       <h1>Clientes</h1>
 
-      <p
-        class="page-subtitle"
-        *ngIf="!carregando && !erro"
-      >
+      <p class="page-subtitle" *ngIf="!carregando && !erro">
         {{ clientes.length }}
-        cliente{{ clientes.length === 1 ? '' : 's' }}
-        cadastrado{{ clientes.length === 1 ? '' : 's' }}
+        cliente{{ clientes.length === 1 ? '' : 's' }} cadastrado{{
+          clientes.length === 1 ? '' : 's'
+        }}
       </p>
     </div>
 
-    <div
-      class="search-bar"
-      *ngIf="!erro && clientes.length > 0"
-    >
+    <div class="header-actions">
+      <div class="search-bar" *ngIf="!erro && clientes.length > 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="7" />
 
-      <svg
-        viewBox="0 0 24 24"
-        fill="none"
-        stroke="currentColor"
-        stroke-width="1.8"
-      >
-        <circle
-          cx="11"
-          cy="11"
-          r="7"
+          <path d="M21 21l-4.3-4.3" stroke-linecap="round" />
+        </svg>
+
+        <input
+          type="text"
+          placeholder="Buscar por nome, telefone ou e-mail"
+          [(ngModel)]="termoBusca"
         />
+      </div>
 
-        <path
-          d="M21 21l-4.3-4.3"
-          stroke-linecap="round"
-        />
-      </svg>
+      <button class="btn-novo-cliente" (click)="abrirModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <path d="M12 5v14M5 12h14" stroke-linecap="round" />
+        </svg>
 
-      <input
-        type="text"
-        placeholder="Buscar por nome, telefone ou e-mail"
-        [(ngModel)]="termoBusca"
-      />
-
+        Novo cliente
+      </button>
     </div>
-
   </header>
-
 
   <!-- CARREGANDO -->
 
-  <div
-    class="state-message"
-    *ngIf="carregando"
-  >
-
+  <div class="state-message" *ngIf="carregando">
     <div class="spinner"></div>
 
     <p>Carregando clientes...</p>
-
   </div>
-
 
   <!-- ERRO -->
 
-  <div
-    class="state-message error"
-    *ngIf="erro && !carregando"
-  >
+  <div class="state-message error" *ngIf="erro && !carregando">
+    <p>Não foi possível carregar os clientes.</p>
 
-    <p>
-      Não foi possível carregar os clientes.
-    </p>
+    <span> Verifique se o back-end está rodando e tente novamente. </span>
 
-    <span>
-      Verifique se o back-end está rodando e tente novamente.
-    </span>
-
-    <button
-      class="retry-button"
-      (click)="carregarClientes()"
-    >
-      Tentar novamente
-    </button>
-
+    <button class="retry-button" (click)="carregarClientes()">Tentar novamente</button>
   </div>
-
 
   <!-- CONTEÚDO -->
 
   <ng-container *ngIf="!carregando && !erro">
-
     <!-- NENHUM CLIENTE -->
 
-    <div
-      class="empty-state"
-      *ngIf="clientes.length === 0"
-    >
+    <div class="empty-state" *ngIf="clientes.length === 0">
+      <p>Nenhum cliente cadastrado ainda.</p>
 
-      <p>
-        Nenhum cliente cadastrado ainda.
-      </p>
-
-      <span>
-        Os clientes cadastrados vão aparecer aqui.
-      </span>
-
+      <span> Os clientes cadastrados vão aparecer aqui. </span>
     </div>
-
 
     <!-- NENHUM RESULTADO -->
 
-    <div
-      class="empty-state"
-      *ngIf="
-        clientes.length > 0 &&
-        clientesFiltrados.length === 0
-      "
-    >
+    <div class="empty-state" *ngIf="clientes.length > 0 && clientesFiltrados.length === 0">
+      <p>Nenhum resultado para "{{ termoBusca }}"</p>
 
-      <p>
-        Nenhum resultado para "{{ termoBusca }}"
-      </p>
-
-      <span>
-        Tente buscar por outro nome, telefone ou e-mail.
-      </span>
-
+      <span> Tente buscar por outro nome, telefone ou e-mail. </span>
     </div>
-
 
     <!-- TABELA -->
 
-    <div
-      class="table-card"
-      *ngIf="clientesFiltrados.length > 0"
-    >
-
+    <div class="table-card" *ngIf="clientesFiltrados.length > 0">
       <table>
-
         <thead>
-
           <tr>
             <th>Cliente</th>
             <th>Telefone</th>
             <th>E-mail</th>
           </tr>
-
         </thead>
 
         <tbody>
-
-          <tr
-            *ngFor="let cliente of clientesFiltrados"
-          >
-
+          <tr *ngFor="let cliente of clientesFiltrados">
             <td>
-
               <div class="cliente-cell">
-
-                <span
-                  class="avatar"
-                  [class]="corAvatar(cliente.nome)"
-                >
+                <span class="avatar" [class]="corAvatar(cliente.nome)">
                   {{ iniciais(cliente.nome) }}
                 </span>
 
                 <span>
                   {{ cliente.nome }}
                 </span>
-
               </div>
-
             </td>
 
             <td class="mono muted">
-              {{ cliente.telefone || '—' }}
+              {{ formatarTelefoneExibicao(cliente.telefone) }}
             </td>
 
             <td class="muted">
               {{ cliente.email || '—' }}
             </td>
-
           </tr>
-
         </tbody>
-
       </table>
-
     </div>
-
   </ng-container>
 
+  <!-- MODAL: NOVO CLIENTE -->
+
+  <div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Novo cliente</h2>
+
+        <button class="modal-close" (click)="fecharModal()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <form (ngSubmit)="salvarCliente()">
+        <label class="campo">
+          Nome *
+          <input
+            type="text"
+            [(ngModel)]="novoCliente.nome"
+            name="nome"
+            required
+            placeholder="Nome completo"
+            autocomplete="off"
+          />
+        </label>
+
+        <label class="campo">
+          Telefone
+          <input
+            type="text"
+            [(ngModel)]="novoCliente.telefone"
+            name="telefone"
+            placeholder="(00) 00000-0000"
+            maxlength="15"
+            autocomplete="off"
+            (input)="formatarTelefone($event)"
+          />
+        </label>
+
+        <label class="campo">
+          E-mail <span class="opcional">(opcional)</span>
+          <input
+            type="email"
+            [(ngModel)]="novoCliente.email"
+            name="email"
+            placeholder="email@exemplo.com"
+            autocomplete="off"
+          />
+        </label>
+
+        <p class="modal-erro" *ngIf="erroSalvar">
+          Não foi possível salvar o cliente. Tente novamente.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="btn-secundario" (click)="fecharModal()">Cancelar</button>
+
+          <button
+            type="submit"
+            class="btn-primario"
+            [disabled]="salvando || !novoCliente.nome?.trim()"
+          >
+            {{ salvando ? 'Salvando...' : 'Salvar cliente' }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
 </div>

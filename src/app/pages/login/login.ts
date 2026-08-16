@@ -1,6 +1,6 @@
 import { Component, signal } from '@angular/core';
 import { FormsModule } from '@angular/forms';
-import { Router } from '@angular/router';
+import { ActivatedRoute, Router } from '@angular/router';
 import { AuthService } from '../../core/services/auth';
 
 @Component({
@@ -25,8 +25,20 @@ export class Login {
   ];
   currentStep = signal<number>(0);
 
-  constructor(private authService: AuthService, private router: Router) {
+  constructor(
+    private authService: AuthService,
+    private router: Router,
+    private route: ActivatedRoute
+  ) {
     this.runDiagnosticLoop();
+    this.verificarSessaoExpirada();
+  }
+
+  private verificarSessaoExpirada(): void {
+    const expirou = this.route.snapshot.queryParams['sessaoExpirada'] === 'true';
+    if (expirou) {
+      this.errorMsg.set('Sua sessão expirou. Faça login novamente.');
+    }
   }
 
   private runDiagnosticLoop(): void {

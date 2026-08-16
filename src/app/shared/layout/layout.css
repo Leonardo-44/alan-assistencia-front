@@ -260,6 +260,15 @@
   box-sizing: border-box; /* 👈 evita que o padding estoure a largura */
 }
 
+.marca-icone {
+  width: 40px;
+  height: 40px;
+  border-radius: 10px;
+  object-fit: contain;
+  background: #ffffff;
+  padding: 4px;
+}
+
 /* ---------- Responsivo ---------- */
 
 @media (max-width: 900px) {

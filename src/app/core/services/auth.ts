@@ -10,7 +10,7 @@ interface LoginResponse {
 
 @Injectable({ providedIn: 'root' })
 export class AuthService {
-  private apiUrl = 'https://allan-assistencia-backend.onrender.com/api/auth';
+  private apiUrl = 'https://alan-assistencia-backend.onrender.com/api/auth';
   isLoggedIn = signal<boolean>(!!localStorage.getItem('token'));
 
   constructor(private http: HttpClient, private router: Router) {}

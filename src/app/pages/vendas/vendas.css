@@ -442,6 +442,22 @@ tbody tr:hover {
   background: var(--surface-hover);
 }
 
+.excluir-button {
+    padding: 9px 18px;
+    border: none;
+    border-radius: 8px;
+    background: var(--accent);
+    color: #ffffff;
+    font-size: 13px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: background 0.2s ease, opacity 0.2s ease;
+}
+
+.excluir-button:hover{
+  background: var(--accent-hover);
+}
+
 .salvar-button {
   padding: 9px 18px;
   border: none;
@@ -526,6 +542,10 @@ tbody tr:hover {
     letter-spacing: 0.04em;
     margin-bottom: 2px;
   }
+
+  .acoes-cell {
+    justify-content: flex-start;
+  }
 }
 
 /* =========================
@@ -558,6 +578,17 @@ tbody tr:hover {
 }
 
 /* =========================
+   AÇÕES DA LINHA (tabela)
+========================= */
+
+.acoes-cell {
+  display: flex;
+  align-items: center;
+  gap: 6px;
+  flex-wrap: wrap;
+}
+
+/* =========================
    BOTÃO REGISTRAR PAGAMENTO
 ========================= */
 
@@ -581,6 +612,26 @@ tbody tr:hover {
 .pagar-button:hover {
   background: var(--accent-soft);
   border-color: var(--accent);
+}
+
+/* =========================
+   BOTÃO COMPROVANTE
+========================= */
+
+.comprovante-button {
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  color: var(--text-secondary);
+  white-space: nowrap;
+  transition: background 0.15s ease;
+}
+
+.comprovante-button:hover {
+  background: var(--surface-hover);
 }
 
 /* =========================
@@ -677,6 +728,20 @@ tbody tr:hover {
 
 .periodo-custom input[type="date"]:focus {
   border-color: var(--accent);
+}
+
+.icon-btn {
+  background: transparent;
+  border: 1px solid var(--border);
+  padding: 6px 9px;
+  border-radius: 8px;
+  cursor: pointer;
+  font-size: 13px;
+  transition: background 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--surface-hover);
 }
 
 @media (max-width: 700px) {

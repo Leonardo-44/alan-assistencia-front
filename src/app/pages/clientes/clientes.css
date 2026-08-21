@@ -16,6 +16,10 @@
   color: var(--text-secondary);
 }
 
+.text-right {
+  text-align: right;
+}
+
 /* =========================
    HEADER
 ========================= */
@@ -172,6 +176,7 @@ tbody td {
   color: var(--text-primary);
 
   border-bottom: 1px solid var(--border-soft);
+  vertical-align: middle;
 }
 
 tbody tr:last-child td {
@@ -216,6 +221,32 @@ tbody tr:hover {
 .av-4 { background: var(--accent-soft); color: var(--accent-hover); }
 .av-5 { background: rgba(168, 85, 247, 0.14); color: #a855f7; }
 .av-6 { background: rgba(34, 211, 238, 0.14); color: #22d3ee; }
+
+/* =========================
+   AÇÕES NA TABELA (estilo ordens-servico)
+========================= */
+
+.actions-cell {
+  white-space: nowrap;
+}
+
+.icon-btn {
+  background: transparent;
+  border: none;
+  padding: 6px 8px;
+  cursor: pointer;
+  border-radius: 6px;
+  font-size: 14px;
+  transition: background 0.15s ease;
+}
+
+.icon-btn:hover {
+  background: var(--surface-hover);
+}
+
+.icon-btn-danger:hover {
+  background: var(--danger-soft, rgba(239, 68, 68, 0.15));
+}
 
 /* =========================
    ESTADOS
@@ -317,32 +348,50 @@ tbody tr:hover {
 }
 
 /* =========================
-   MODAL
+   MODAL (estilo ordens-servico)
 ========================= */
 
-.modal-overlay {
+.modal-backdrop {
   position: fixed;
   inset: 0;
-  z-index: 100;
+  z-index: 1000;
 
   display: flex;
   align-items: center;
   justify-content: center;
 
-  padding: 20px;
+  padding: 16px;
 
-  background: rgba(0, 0, 0, 0.5);
+  background: rgba(0, 0, 0, 0.65);
+  backdrop-filter: blur(4px);
 }
 
 .modal-card {
   width: 100%;
   max-width: 420px;
 
-  padding: 24px;
-
   background: var(--surface);
   border: 1px solid var(--border);
-  border-radius: 14px;
+  border-radius: 16px;
+
+  box-shadow: 0 20px 25px -5px rgba(0, 0, 0, 0.4);
+  overflow: hidden;
+  animation: modalFadeIn 0.2s ease-out;
+}
+
+.modal-card-sm {
+  max-width: 380px;
+}
+
+@keyframes modalFadeIn {
+  from {
+    opacity: 0;
+    transform: translateY(10px) scale(0.98);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0) scale(1);
+  }
 }
 
 .modal-header {
@@ -350,7 +399,9 @@ tbody tr:hover {
   align-items: center;
   justify-content: space-between;
 
-  margin-bottom: 18px;
+  padding: 18px 20px;
+
+  border-bottom: 1px solid var(--border);
 }
 
 .modal-header h2 {
@@ -363,93 +414,157 @@ tbody tr:hover {
   color: var(--text-primary);
 }
 
-.modal-close {
+.close-btn {
   border: none;
   background: transparent;
 
-  font-size: 20px;
+  font-size: 22px;
   line-height: 1;
   color: var(--text-muted);
 
   cursor: pointer;
 }
 
-.campo {
+.close-btn:hover {
+  color: var(--text-primary);
+}
+
+.modal-body {
+  padding: 20px;
+
+  display: flex;
+  flex-direction: column;
+  gap: 16px;
+}
+
+.form-group {
   display: flex;
   flex-direction: column;
   gap: 6px;
-
-  margin-bottom: 14px;
 
   font-size: 12.5px;
   font-weight: 600;
   color: var(--text-secondary);
 }
 
-.campo .opcional {
+.form-group .opcional {
   font-weight: 400;
   color: var(--text-muted);
 }
 
-.campo input {
+.form-group input {
   padding: 10px 12px;
 
   border: 1px solid var(--border);
   border-radius: 8px;
-  background: var(--surface);
+  background: var(--surface-hover, rgba(0, 0, 0, 0.15));
 
   font-size: 13.5px;
   color: var(--text-primary);
   outline: none;
+  width: 100%;
 }
 
-.campo input:focus {
+.form-group input:focus {
   border-color: var(--accent);
 }
 
-.modal-erro {
-  margin: 0 0 14px;
+.confirm-text {
+  margin: 0;
 
-  font-size: 13px;
-  color: var(--warning, #e0a030);
+  font-size: 13.5px;
+  line-height: 1.5;
+  color: var(--text-secondary);
 }
 
-.modal-actions {
+.confirm-text strong {
+  color: var(--text-primary);
+}
+
+.modal-erro {
+  margin: 0;
+
+  font-size: 13px;
+  color: var(--danger, #ef4444);
+}
+
+.modal-footer {
   display: flex;
   justify-content: flex-end;
   gap: 10px;
 
-  margin-top: 6px;
+  padding: 16px 20px;
+
+  background: var(--surface-hover, rgba(0, 0, 0, 0.1));
+  border-top: 1px solid var(--border);
 }
 
-.btn-secundario,
-.btn-primario {
+.btn-secondary {
   padding: 9px 16px;
 
-  border: none;
+  border: 1px solid var(--border);
   border-radius: 8px;
+
+  background: transparent;
+  color: var(--text-primary);
 
   font-size: 13px;
   font-weight: 600;
 
   cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.btn-secundario {
+.btn-secondary:hover {
   background: var(--surface-hover);
-  color: var(--text-primary);
 }
 
-.btn-primario {
+.btn-primary {
+  padding: 9px 16px;
+
+  border: none;
+  border-radius: 8px;
+
   background: var(--accent);
   color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: background 0.2s ease;
 }
 
-.btn-primario:hover {
+.btn-primary:hover {
   background: var(--accent-hover);
 }
 
-.btn-primario:disabled {
+.btn-primary:disabled {
+  opacity: 0.6;
+  cursor: not-allowed;
+}
+
+.btn-danger {
+  padding: 9px 16px;
+
+  border: none;
+  border-radius: 8px;
+
+  background: var(--danger, #ef4444);
+  color: #ffffff;
+
+  font-size: 13px;
+  font-weight: 600;
+
+  cursor: pointer;
+  transition: background 0.2s ease;
+}
+
+.btn-danger:hover {
+  background: #dc2626;
+}
+
+.btn-danger:disabled {
   opacity: 0.6;
   cursor: not-allowed;
 }
@@ -516,6 +631,15 @@ tbody tr:hover {
 
   .cliente-cell {
     padding-top: 4px;
+  }
+
+  .actions-cell {
+    text-align: left;
+    padding-top: 8px;
+  }
+
+  .actions-cell.text-right {
+    text-align: left;
   }
 }
 

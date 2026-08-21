@@ -4,7 +4,7 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { VendaService } from '../../core/services/venda';
-import { Venda, VendaRequest, StatusPagamento } from '../../core/models/venda/venda-module';
+import { Venda, VendaRequest, StatusPagamento, ComprovanteVendaRequest } from '../../core/models/venda/venda-module';
 
 type PeriodoId = 'hoje' | '7dias' | 'mes' | 'personalizado';
 
@@ -195,12 +195,15 @@ export class Vendas implements OnInit {
   }
 
   // =========================
-  // MODAL DE CADASTRO
+  // MODAL DE CADASTRO / EDIÇÃO
   // =========================
 
   modalAberto = false;
   salvando = false;
   erroSalvar = false;
+
+  modoEdicao = false;
+  vendaEmEdicaoId: number | null = null;
 
   novaVenda: VendaRequest = this.vendaVazia();
 
@@ -223,7 +226,25 @@ export class Vendas implements OnInit {
   }
 
   abrirModal(): void {
+    this.modoEdicao = false;
+    this.vendaEmEdicaoId = null;
     this.novaVenda = this.vendaVazia();
+    this.erroSalvar = false;
+    this.modalAberto = true;
+  }
+
+  abrirModalEdicao(venda: Venda): void {
+    this.modoEdicao = true;
+    this.vendaEmEdicaoId = venda.id;
+
+    this.novaVenda = {
+      aparelho: venda.aparelho,
+      imei: venda.imei ?? '',
+      valor: venda.valor,
+      valorPago: venda.valorPago,
+      formaPagamento: venda.formaPagamento,
+    };
+
     this.erroSalvar = false;
     this.modalAberto = true;
   }
@@ -231,6 +252,8 @@ export class Vendas implements OnInit {
   fecharModal(): void {
     this.modalAberto = false;
     this.erroSalvar = false;
+    this.modoEdicao = false;
+    this.vendaEmEdicaoId = null;
   }
 
   salvarVenda(form: NgForm): void {
@@ -247,8 +270,11 @@ export class Vendas implements OnInit {
       valorPago: this.novaVenda.valorPago ?? 0,
     };
 
-    this.vendaService
-      .salvar(dto)
+    const request$ = this.modoEdicao && this.vendaEmEdicaoId
+      ? this.vendaService.atualizar(this.vendaEmEdicaoId, dto)
+      : this.vendaService.salvar(dto);
+
+    request$
       .pipe(
         finalize(() => {
           this.salvando = false;
@@ -256,14 +282,76 @@ export class Vendas implements OnInit {
         })
       )
       .subscribe({
-        next: (vendaCriada) => {
-          this.vendas = [vendaCriada, ...this.vendas];
+        next: (vendaSalva) => {
+          if (this.modoEdicao) {
+            this.vendas = this.vendas.map((v) =>
+              v.id === vendaSalva.id ? vendaSalva : v
+            );
+          } else {
+            this.vendas = [vendaSalva, ...this.vendas];
+          }
+
           this.modalAberto = false;
+          this.modoEdicao = false;
+          this.vendaEmEdicaoId = null;
           this.cdr.detectChanges();
         },
 
         error: () => {
           this.erroSalvar = true;
+          this.cdr.detectChanges();
+        },
+      });
+  }
+
+  // =========================
+  // EXCLUSÃO
+  // =========================
+
+  modalExcluirAberto = false;
+  excluindo = false;
+  erroExcluir = false;
+
+  vendaParaExcluir: Venda | null = null;
+
+  abrirModalExcluir(venda: Venda): void {
+    this.vendaParaExcluir = venda;
+    this.erroExcluir = false;
+    this.modalExcluirAberto = true;
+  }
+
+  fecharModalExcluir(): void {
+    this.modalExcluirAberto = false;
+    this.vendaParaExcluir = null;
+    this.erroExcluir = false;
+  }
+
+  confirmarExclusao(): void {
+    if (!this.vendaParaExcluir) {
+      return;
+    }
+
+    const id = this.vendaParaExcluir.id;
+
+    this.excluindo = true;
+    this.erroExcluir = false;
+
+    this.vendaService
+      .remover(id)
+      .pipe(
+        finalize(() => {
+          this.excluindo = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: () => {
+          this.vendas = this.vendas.filter((v) => v.id !== id);
+          this.fecharModalExcluir();
+        },
+
+        error: () => {
+          this.erroExcluir = true;
           this.cdr.detectChanges();
         },
       });
@@ -329,6 +417,80 @@ export class Vendas implements OnInit {
           this.erroPagamento =
             erro?.error?.mensagem ?? 'Não foi possível registrar o pagamento.';
           this.cdr.detectChanges();
+        },
+      });
+  }
+
+  // =========================
+  // MODAL DE COMPROVANTE
+  // =========================
+
+  modalComprovanteAberto = false;
+  gerandoComprovante = false;
+
+  comprovanteForm: ComprovanteVendaRequest & { vendaId: number | null } = this.comprovanteVazio();
+
+  private comprovanteVazio(): ComprovanteVendaRequest & { vendaId: number | null } {
+    return {
+      vendaId: null,
+      aparelho: '',
+      imei: '',
+      valor: undefined,
+      valorPago: undefined,
+      formaPagamento: '',
+    };
+  }
+
+  abrirModalComprovante(venda: Venda): void {
+    this.comprovanteForm = {
+      vendaId: venda.id,
+      aparelho: venda.aparelho,
+      imei: venda.imei ?? '',
+      valor: venda.valor,
+      valorPago: venda.valorPago,
+      formaPagamento: venda.formaPagamento,
+    };
+
+    this.modalComprovanteAberto = true;
+  }
+
+  fecharModalComprovante(): void {
+    this.modalComprovanteAberto = false;
+    this.comprovanteForm = this.comprovanteVazio();
+  }
+
+  confirmarGerarComprovante(): void {
+    if (!this.comprovanteForm.vendaId) {
+      return;
+    }
+
+    this.gerandoComprovante = true;
+
+    const { vendaId, ...dados } = this.comprovanteForm;
+
+    this.vendaService
+      .gerarComprovantePdf(vendaId, dados)
+      .pipe(
+        finalize(() => {
+          this.gerandoComprovante = false;
+          this.cdr.detectChanges();
+        })
+      )
+      .subscribe({
+        next: (blob) => {
+          const url = window.URL.createObjectURL(blob);
+          const a = document.createElement('a');
+
+          a.href = url;
+          a.download = `comprovante-venda-${vendaId}.pdf`;
+          a.click();
+
+          window.URL.revokeObjectURL(url);
+          this.fecharModalComprovante();
+        },
+
+        error: (err) => {
+          console.error('Erro ao gerar comprovante:', err);
         },
       });
   }

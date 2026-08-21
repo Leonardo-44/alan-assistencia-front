@@ -241,7 +241,7 @@ export class OrdensServico implements OnInit {
     }
 
     // SE EXISTIR MÉTODO NO SERVICE
-    if (requisicao$) {
+        if (requisicao$) {
       requisicao$
         .pipe(
           finalize(() => {
@@ -257,6 +257,7 @@ export class OrdensServico implements OnInit {
 
           error: (err: any) => {
             console.error('Erro ao salvar OS:', err);
+            alert('Erro: ' + JSON.stringify({ status: err.status, message: err.message, name: err.name }));
           },
         });
 
@@ -373,22 +374,18 @@ export class OrdensServico implements OnInit {
   // ==========================================
 
   abrirModalComprovante(os: OrdemServico): void {
-    this.comprovanteForm = {
-      osId: os.id,
-      nomeProduto: os.aparelho,
-      nomeCliente: os.clienteNome,
+  this.comprovanteForm = {
+    osId: os.id,
+    nomeProduto: os.aparelho,
+    nomeCliente: os.clienteNome,
+    servicoRealizado: os.servicoRealizado ?? undefined,
+    valor: os.valor ?? undefined,
+    garantiaDias: os.garantiaDias ?? 0,
+    imei: os.imei ?? '',
+  };
 
-      // null -> undefined
-      servicoRealizado: os.servicoRealizado ?? undefined,
-
-      // null -> undefined
-      valor: os.valor ?? undefined,
-
-      garantiaDias: os.garantiaDias ?? 0,
-    };
-
-    this.exibirModalComprovante = true;
-  }
+  this.exibirModalComprovante = true;
+}
 
   fecharModalComprovante(): void {
     this.exibirModalComprovante = false;
@@ -441,18 +438,17 @@ export class OrdensServico implements OnInit {
   // COMPROVANTE VAZIO
   // ==========================================
 
-  private criarComprovanteVazio(): ComprovanteRequest & {
-    osId: number | null;
-  } {
-    return {
-      osId: null,
-      nomeProduto: '',
-      nomeCliente: '',
-      servicoRealizado: '',
-      valor: undefined,
-      garantiaDias: 0,
-    };
-  }
+  private criarComprovanteVazio(): ComprovanteRequest & { osId: number | null } {
+  return {
+    osId: null,
+    nomeProduto: '',
+    nomeCliente: '',
+    servicoRealizado: '',
+    valor: undefined,
+    garantiaDias: 0,
+    imei: '',
+  };
+}
 
   // ==========================================
   // KPIs
@@ -542,19 +538,16 @@ export class OrdensServico implements OnInit {
   // ==========================================
 
   private criarNovaOSObj(): Partial<OrdemServico> {
-    return {
-      clienteId: undefined,
-      clienteNome: '',
-      aparelho: '',
-      defeito: '',
-      status: 'ABERTA',
-      valor: undefined,
-      dataEntrada: new Date()
-        .toISOString()
-        .split('T')[0],
-
-      // null é compatível com a interface
-      dataEntrega: null,
-    };
-  }
+  return {
+    clienteId: undefined,
+    clienteNome: '',
+    aparelho: '',
+    imei: '',
+    defeito: '',
+    status: 'ABERTA',
+    valor: undefined,
+    dataEntrada: new Date().toISOString().split('T')[0],
+    dataEntrega: null,
+  };
+}
 }

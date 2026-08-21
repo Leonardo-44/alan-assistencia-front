@@ -7,6 +7,7 @@ import { environment } from '../../../environments/enviroment';
 import {
   Venda,
   VendaRequest,
+  ComprovanteVendaRequest,
 } from '../models/venda/venda-module';
 
 @Injectable({
@@ -61,4 +62,12 @@ export class VendaService {
       .delete<void>(`${this.baseUrl}/${id}`)
       .pipe(timeout(10000));
   }
+
+  gerarComprovantePdf(id: number, dados: ComprovanteVendaRequest): Observable<Blob> {
+  return this.http
+    .post(`${this.baseUrl}/${id}/comprovante`, dados, {
+      responseType: 'blob',
+    })
+    .pipe(timeout(15000));
+}
 }

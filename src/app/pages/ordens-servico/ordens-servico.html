@@ -425,6 +425,19 @@
             </div>
           </div>
 
+          <!-- IMEI -->
+          <div class="form-group">
+            <label for="imei"> IMEI </label>
+            <input
+              id="imei"
+              type="text"
+              name="imei"
+              [(ngModel)]="osEdicao.imei"
+              placeholder="Ex: 356938035643809"
+              maxlength="20"
+            />
+          </div>
+
           <!-- Defeito -->
           <div class="form-group">
             <label for="defeito"> Defeito Reclamado * </label>

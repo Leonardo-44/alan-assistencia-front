@@ -61,4 +61,5 @@ export interface ComprovanteRequest {
   servicoRealizado?: string;
   valor?: number;
   garantiaDias?: number;
+  imei?: string;
 }

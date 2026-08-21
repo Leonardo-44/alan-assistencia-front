@@ -23,3 +23,12 @@ export interface VendaRequest {
   valorPago?: number;
   formaPagamento: string;
 }
+
+// Espelha ComprovanteVendaRequestDTO (novo endpoint no backend)
+export interface ComprovanteVendaRequest {
+  aparelho?: string;
+  imei?: string;
+  valor?: number;
+  valorPago?: number;
+  formaPagamento?: string;
+}

@@ -1,26 +1,30 @@
 <div class="vendas-page">
-
   <header class="page-header">
     <div>
       <h1>Vendas</h1>
       <p class="page-subtitle" *ngIf="!carregando && !erro">
-        {{ vendasNoPeriodo.length }} venda{{ vendasNoPeriodo.length === 1 ? '' : 's' }} no período selecionado
+        {{ vendasNoPeriodo.length }} venda{{ vendasNoPeriodo.length === 1 ? '' : 's' }} no período
+        selecionado
       </p>
     </div>
 
     <div class="header-actions">
       <div class="search-bar" *ngIf="!erro && vendas.length > 0">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
-          <circle cx="11" cy="11" r="7"/>
-          <path d="M21 21l-4.3-4.3" stroke-linecap="round"/>
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" stroke-linecap="round" />
         </svg>
-        <input type="text" placeholder="Buscar por aparelho ou pagamento" [(ngModel)]="termoBusca" />
+        <input
+          type="text"
+          placeholder="Buscar por aparelho ou pagamento"
+          [(ngModel)]="termoBusca"
+        />
       </div>
 
       <button class="nova-venda-button" (click)="abrirModal()">
         <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-          <line x1="12" y1="5" x2="12" y2="19"/>
-          <line x1="5" y1="12" x2="19" y2="12"/>
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
         </svg>
         Nova venda
       </button>
@@ -29,7 +33,6 @@
 
   <!-- FILTRO DE PERÍODO -->
   <div class="periodo-bar" *ngIf="!erro && vendas.length > 0">
-
     <div class="periodo-tabs">
       <button
         *ngFor="let periodo of periodos"
@@ -43,33 +46,24 @@
     </div>
 
     <div class="periodo-custom" *ngIf="periodoSelecionado === 'personalizado'">
-      <input
-        type="date"
-        [(ngModel)]="dataInicioPersonalizada"
-        name="dataInicioPersonalizada"
-      />
+      <input type="date" [(ngModel)]="dataInicioPersonalizada" name="dataInicioPersonalizada" />
       <span class="muted">até</span>
-      <input
-        type="date"
-        [(ngModel)]="dataFimPersonalizada"
-        name="dataFimPersonalizada"
-      />
+      <input type="date" [(ngModel)]="dataFimPersonalizada" name="dataFimPersonalizada" />
     </div>
-
   </div>
 
   <div class="resumo-grid" *ngIf="!carregando && !erro && vendas.length > 0">
     <div class="resumo-card">
       <span class="resumo-label">Total vendido</span>
-      <span class="resumo-value">{{ totalVendido | currency:'BRL' }}</span>
+      <span class="resumo-value">{{ totalVendido | currency: 'BRL' }}</span>
     </div>
     <div class="resumo-card">
       <span class="resumo-label">A receber</span>
-      <span class="resumo-value">{{ totalAReceber | currency:'BRL' }}</span>
+      <span class="resumo-value">{{ totalAReceber | currency: 'BRL' }}</span>
     </div>
     <div class="resumo-card">
       <span class="resumo-label">Ticket médio</span>
-      <span class="resumo-value">{{ ticketMedio | currency:'BRL' }}</span>
+      <span class="resumo-value">{{ ticketMedio | currency: 'BRL' }}</span>
     </div>
   </div>
 
@@ -85,7 +79,6 @@
   </div>
 
   <ng-container *ngIf="!carregando && !erro">
-
     <div class="empty-state" *ngIf="vendas.length === 0">
       <p>Nenhuma venda registrada ainda.</p>
       <span>As vendas cadastradas vão aparecer aqui.</span>
@@ -113,10 +106,10 @@
         <tbody>
           <tr *ngFor="let venda of vendasFiltradas">
             <td data-label="Aparelho">{{ venda.aparelho }}</td>
-            <td data-label="Valor" class="mono">{{ venda.valor | currency:'BRL' }}</td>
-            <td data-label="Pago" class="mono muted">{{ venda.valorPago | currency:'BRL' }}</td>
+            <td data-label="Valor" class="mono">{{ venda.valor | currency: 'BRL' }}</td>
+            <td data-label="Pago" class="mono muted">{{ venda.valorPago | currency: 'BRL' }}</td>
             <td data-label="Restante" class="mono" [class.positivo]="venda.valorRestante === 0">
-              {{ venda.valorRestante | currency:'BRL' }}
+              {{ venda.valorRestante | currency: 'BRL' }}
             </td>
             <td data-label="Status">
               <span class="badge" [attr.data-status-pagamento]="venda.statusPagamento">
@@ -124,8 +117,8 @@
               </span>
             </td>
             <td data-label="Pagamento" class="muted">{{ venda.formaPagamento }}</td>
-            <td data-label="Data" class="mono muted">{{ venda.dataVenda | date:'dd/MM/yy' }}</td>
-            <td data-label="">
+            <td data-label="Data" class="mono muted">{{ venda.dataVenda | date: 'dd/MM/yy' }}</td>
+            <td data-label="" class="acoes-cell">
               <button
                 class="pagar-button"
                 *ngIf="venda.valorRestante > 0"
@@ -133,23 +126,34 @@
               >
                 Registrar pagamento
               </button>
+
+              <button class="comprovante-button" (click)="abrirModalComprovante(venda)" title="Gerar comprovante">
+                📄
+              </button>
+
+              <button class="comprovante-button" (click)="abrirModalEdicao(venda)" title="Editar venda">
+                ✏️
+              </button>
+
+              <button class="comprovante-button excluir-icon" (click)="abrirModalExcluir(venda)" title="Excluir venda">
+                🗑️
+              </button>
             </td>
           </tr>
         </tbody>
       </table>
     </div>
-
   </ng-container>
 
-  <!-- MODAL: NOVA VENDA -->
+  <!-- MODAL: NOVA VENDA / EDITAR VENDA -->
   <div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Nova venda</h2>
+        <h2>{{ modoEdicao ? 'Editar venda' : 'Nova venda' }}</h2>
         <button class="modal-close" (click)="fecharModal()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
@@ -225,7 +229,103 @@
         <div class="modal-actions">
           <button type="button" class="cancelar-button" (click)="fecharModal()">Cancelar</button>
           <button type="submit" class="salvar-button" [disabled]="salvando">
-            {{ salvando ? 'Salvando...' : 'Salvar venda' }}
+            {{ salvando ? 'Salvando...' : (modoEdicao ? 'Salvar alterações' : 'Salvar venda') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: COMPROVANTE DE VENDA -->
+  <div class="modal-overlay" *ngIf="modalComprovanteAberto" (click)="fecharModalComprovante()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Gerar comprovante</h2>
+        <button class="modal-close" (click)="fecharModalComprovante()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form
+        class="modal-form"
+        #comprovanteFormRef="ngForm"
+        (ngSubmit)="confirmarGerarComprovante()"
+      >
+        <div class="form-field">
+          <label for="aparelhoComp">Aparelho</label>
+          <input
+            id="aparelhoComp"
+            type="text"
+            name="aparelho"
+            [(ngModel)]="comprovanteForm.aparelho"
+            required
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="imeiComp">IMEI</label>
+          <input
+            id="imeiComp"
+            type="text"
+            name="imei"
+            [(ngModel)]="comprovanteForm.imei"
+            placeholder="000000000000000"
+          />
+        </div>
+
+        <div class="form-row">
+          <div class="form-field">
+            <label for="valorComp">Valor total</label>
+            <input
+              id="valorComp"
+              type="number"
+              name="valor"
+              min="0"
+              step="0.01"
+              [(ngModel)]="comprovanteForm.valor"
+              required
+            />
+          </div>
+
+          <div class="form-field">
+            <label for="valorPagoComp">Valor pago</label>
+            <input
+              id="valorPagoComp"
+              type="number"
+              name="valorPago"
+              min="0"
+              step="0.01"
+              [(ngModel)]="comprovanteForm.valorPago"
+            />
+          </div>
+        </div>
+
+        <div class="form-field">
+          <label for="formaPagamentoComp">Forma de pagamento</label>
+          <select
+            id="formaPagamentoComp"
+            name="formaPagamento"
+            [(ngModel)]="comprovanteForm.formaPagamento"
+            required
+          >
+            <option value="" disabled>Selecione</option>
+            <option *ngFor="let forma of formasPagamento" [value]="forma">{{ forma }}</option>
+          </select>
+        </div>
+
+        <div class="modal-actions">
+          <button type="button" class="cancelar-button" (click)="fecharModalComprovante()">
+            Cancelar
+          </button>
+          <button
+            type="submit"
+            class="salvar-button"
+            [disabled]="comprovanteFormRef.invalid || gerandoComprovante"
+          >
+            {{ gerandoComprovante ? 'Gerando...' : '📄 Gerar PDF' }}
           </button>
         </div>
       </form>
@@ -239,8 +339,8 @@
         <h2>Registrar pagamento</h2>
         <button class="modal-close" (click)="fecharModalPagamento()">
           <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
-            <line x1="18" y1="6" x2="6" y2="18"/>
-            <line x1="6" y1="6" x2="18" y2="18"/>
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
           </svg>
         </button>
       </div>
@@ -248,7 +348,12 @@
       <div class="modal-form" *ngIf="vendaSelecionada">
         <p class="pagamento-resumo">
           <span>{{ vendaSelecionada.aparelho }}</span>
-          <span class="muted">Restante: <strong class="mono">{{ vendaSelecionada.valorRestante | currency:'BRL' }}</strong></span>
+          <span class="muted"
+            >Restante:
+            <strong class="mono">{{
+              vendaSelecionada.valorRestante | currency: 'BRL'
+            }}</strong></span
+          >
         </p>
 
         <div class="form-field">
@@ -267,8 +372,15 @@
         <p class="modal-erro" *ngIf="erroPagamento">{{ erroPagamento }}</p>
 
         <div class="modal-actions">
-          <button type="button" class="cancelar-button" (click)="fecharModalPagamento()">Cancelar</button>
-          <button type="button" class="salvar-button" [disabled]="salvandoPagamento" (click)="confirmarPagamento()">
+          <button type="button" class="cancelar-button" (click)="fecharModalPagamento()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="salvar-button"
+            [disabled]="salvandoPagamento"
+            (click)="confirmarPagamento()"
+          >
             {{ salvandoPagamento ? 'Salvando...' : 'Confirmar' }}
           </button>
         </div>
@@ -276,4 +388,44 @@
     </div>
   </div>
 
+  <!-- MODAL: EXCLUIR VENDA -->
+  <div class="modal-overlay" *ngIf="modalExcluirAberto" (click)="fecharModalExcluir()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Excluir venda</h2>
+        <button class="modal-close" (click)="fecharModalExcluir()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-form" *ngIf="vendaParaExcluir">
+        <p class="excluir-mensagem">
+          Tem certeza que deseja excluir a venda de
+          <strong>{{ vendaParaExcluir.aparelho }}</strong>?
+          Essa ação não pode ser desfeita.
+        </p>
+
+        <p class="modal-erro" *ngIf="erroExcluir">
+          Não foi possível excluir a venda. Tente novamente.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancelar-button" (click)="fecharModalExcluir()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="excluir-button"
+            [disabled]="excluindo"
+            (click)="confirmarExclusao()"
+          >
+            {{ excluindo ? 'Excluindo...' : 'Excluir' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
 </div>

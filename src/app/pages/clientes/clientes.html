@@ -82,12 +82,13 @@
             <th>Cliente</th>
             <th>Telefone</th>
             <th>E-mail</th>
+            <th class="text-right">Ações</th>
           </tr>
         </thead>
 
         <tbody>
           <tr *ngFor="let cliente of clientesFiltrados">
-            <td>
+            <td data-label="Cliente">
               <div class="cliente-cell">
                 <span class="avatar" [class]="corAvatar(cliente.nome)">
                   {{ iniciais(cliente.nome) }}
@@ -99,12 +100,32 @@
               </div>
             </td>
 
-            <td class="mono muted">
+            <td class="mono muted" data-label="Telefone">
               {{ formatarTelefoneExibicao(cliente.telefone) }}
             </td>
 
-            <td class="muted">
+            <td class="muted" data-label="E-mail">
               {{ cliente.email || '—' }}
+            </td>
+
+            <td class="actions-cell text-right" data-label="Ações">
+              <button
+                class="icon-btn"
+                title="Editar cliente"
+                aria-label="Editar cliente"
+                (click)="abrirModalEdicao(cliente)"
+              >
+                ✏️
+              </button>
+
+              <button
+                class="icon-btn icon-btn-danger"
+                title="Excluir cliente"
+                aria-label="Excluir cliente"
+                (click)="abrirModalExclusao(cliente)"
+              >
+                🗑️
+              </button>
             </td>
           </tr>
         </tbody>
@@ -112,69 +133,108 @@
     </div>
   </ng-container>
 
-  <!-- MODAL: NOVO CLIENTE -->
+  <!-- MODAL: CRIAR / EDITAR CLIENTE -->
 
-  <div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
+  <div class="modal-backdrop" *ngIf="modalAberto" (click)="fecharModal()">
     <div class="modal-card" (click)="$event.stopPropagation()">
       <div class="modal-header">
-        <h2>Novo cliente</h2>
+        <h2>{{ modoEdicao ? 'Editar cliente' : 'Novo cliente' }}</h2>
 
-        <button class="modal-close" (click)="fecharModal()" aria-label="Fechar">&times;</button>
+        <button class="close-btn" (click)="fecharModal()" aria-label="Fechar">&times;</button>
       </div>
 
       <form (ngSubmit)="salvarCliente()">
-        <label class="campo">
-          Nome *
-          <input
-            type="text"
-            [(ngModel)]="novoCliente.nome"
-            name="nome"
-            required
-            placeholder="Nome completo"
-            autocomplete="off"
-          />
-        </label>
+        <div class="modal-body">
+          <div class="form-group">
+            <label>Nome *</label>
+            <input
+              type="text"
+              [(ngModel)]="novoCliente.nome"
+              name="nome"
+              required
+              placeholder="Nome completo"
+              autocomplete="off"
+            />
+          </div>
 
-        <label class="campo">
-          Telefone
-          <input
-            type="text"
-            [(ngModel)]="novoCliente.telefone"
-            name="telefone"
-            placeholder="(00) 00000-0000"
-            maxlength="15"
-            autocomplete="off"
-            (input)="formatarTelefone($event)"
-          />
-        </label>
+          <div class="form-group">
+            <label>Telefone</label>
+            <input
+              type="text"
+              [(ngModel)]="novoCliente.telefone"
+              name="telefone"
+              placeholder="(00) 00000-0000"
+              maxlength="15"
+              autocomplete="off"
+              (input)="formatarTelefone($event)"
+            />
+          </div>
 
-        <label class="campo">
-          E-mail <span class="opcional">(opcional)</span>
-          <input
-            type="email"
-            [(ngModel)]="novoCliente.email"
-            name="email"
-            placeholder="email@exemplo.com"
-            autocomplete="off"
-          />
-        </label>
+          <div class="form-group">
+            <label>E-mail <span class="opcional">(opcional)</span></label>
+            <input
+              type="email"
+              [(ngModel)]="novoCliente.email"
+              name="email"
+              placeholder="email@exemplo.com"
+              autocomplete="off"
+            />
+          </div>
 
-        <p class="modal-erro" *ngIf="erroSalvar">
-          Não foi possível salvar o cliente. Tente novamente.
-        </p>
+          <p class="modal-erro" *ngIf="erroSalvar">
+            Não foi possível salvar o cliente. Tente novamente.
+          </p>
+        </div>
 
-        <div class="modal-actions">
-          <button type="button" class="btn-secundario" (click)="fecharModal()">Cancelar</button>
+        <div class="modal-footer">
+          <button type="button" class="btn-secondary" (click)="fecharModal()">Cancelar</button>
 
           <button
             type="submit"
-            class="btn-primario"
+            class="btn-primary"
             [disabled]="salvando || !novoCliente.nome?.trim()"
           >
-            {{ salvando ? 'Salvando...' : 'Salvar cliente' }}
+            {{ salvando ? 'Salvando...' : (modoEdicao ? 'Salvar alterações' : 'Salvar cliente') }}
           </button>
         </div>
       </form>
+    </div>
+  </div>
+
+  <!-- MODAL: CONFIRMAR EXCLUSÃO -->
+
+  <div class="modal-backdrop" *ngIf="clienteParaExcluir" (click)="fecharModalExclusao()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Excluir cliente</h2>
+
+        <button class="close-btn" (click)="fecharModalExclusao()" aria-label="Fechar">&times;</button>
+      </div>
+
+      <div class="modal-body">
+        <p class="confirm-text">
+          Tem certeza que deseja excluir
+          <strong>{{ clienteParaExcluir?.nome }}</strong>?
+          Essa ação não pode ser desfeita.
+        </p>
+
+        <p class="modal-erro" *ngIf="erroExcluir">
+          Não foi possível excluir o cliente. Tente novamente.
+        </p>
+      </div>
+
+      <div class="modal-footer">
+        <button type="button" class="btn-secondary" (click)="fecharModalExclusao()">Cancelar</button>
+
+        <button
+          type="button"
+          class="btn-danger"
+          [disabled]="excluindo"
+          (click)="confirmarExclusao()"
+        >
+          {{ excluindo ? 'Excluindo...' : 'Excluir' }}
+        </button>
+      </div>
     </div>
   </div>
 </div>

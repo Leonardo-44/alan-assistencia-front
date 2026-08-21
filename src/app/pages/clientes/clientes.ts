@@ -29,15 +29,23 @@ export class Clientes implements OnInit {
   erro = false;
   termoBusca = '';
 
+  // Modal de criar/editar
   modalAberto = false;
   salvando = false;
   erroSalvar = false;
+  modoEdicao = false;
+  clienteEmEdicaoId: number | null = null;
 
   novoCliente: ClienteRequest = {
     nome: '',
     telefone: '',
     email: '',
   };
+
+  // Modal de exclusão
+  clienteParaExcluir: Cliente | null = null;
+  excluindo = false;
+  erroExcluir = false;
 
   private readonly coresAvatar = [
     'av-1',
@@ -164,8 +172,26 @@ export class Clientes implements OnInit {
     return telefone;
   }
 
+  // =========================
+  // MODAL CRIAR / EDITAR
+  // =========================
+
   abrirModal(): void {
+    this.modoEdicao = false;
+    this.clienteEmEdicaoId = null;
     this.novoCliente = { nome: '', telefone: '', email: '' };
+    this.erroSalvar = false;
+    this.modalAberto = true;
+  }
+
+  abrirModalEdicao(cliente: Cliente): void {
+    this.modoEdicao = true;
+    this.clienteEmEdicaoId = cliente.id;
+    this.novoCliente = {
+      nome: cliente.nome,
+      telefone: cliente.telefone ?? '',
+      email: cliente.email ?? '',
+    };
     this.erroSalvar = false;
     this.modalAberto = true;
   }
@@ -188,6 +214,29 @@ export class Clientes implements OnInit {
       email: this.novoCliente.email?.trim() || '',
     };
 
+    if (this.modoEdicao && this.clienteEmEdicaoId != null) {
+      this.clienteService.atualizar(this.clienteEmEdicaoId, dto).subscribe({
+        next: (clienteAtualizado) => {
+          this.clientes = this.clientes.map((c) =>
+            c.id === clienteAtualizado.id ? clienteAtualizado : c
+          );
+          this.salvando = false;
+          this.modalAberto = false;
+
+          this.cdr.detectChanges();
+        },
+
+        error: () => {
+          this.erroSalvar = true;
+          this.salvando = false;
+
+          this.cdr.detectChanges();
+        },
+      });
+
+      return;
+    }
+
     this.clienteService.salvar(dto).subscribe({
       next: (clienteCriado) => {
         this.clientes = [...this.clientes, clienteCriado];
@@ -200,6 +249,48 @@ export class Clientes implements OnInit {
       error: () => {
         this.erroSalvar = true;
         this.salvando = false;
+
+        this.cdr.detectChanges();
+      },
+    });
+  }
+
+  // =========================
+  // MODAL EXCLUIR
+  // =========================
+
+  abrirModalExclusao(cliente: Cliente): void {
+    this.clienteParaExcluir = cliente;
+    this.erroExcluir = false;
+  }
+
+  fecharModalExclusao(): void {
+    this.clienteParaExcluir = null;
+    this.erroExcluir = false;
+  }
+
+  confirmarExclusao(): void {
+    if (!this.clienteParaExcluir) {
+      return;
+    }
+
+    const id = this.clienteParaExcluir.id;
+
+    this.excluindo = true;
+    this.erroExcluir = false;
+
+    this.clienteService.remover(id).subscribe({
+      next: () => {
+        this.clientes = this.clientes.filter((c) => c.id !== id);
+        this.excluindo = false;
+        this.clienteParaExcluir = null;
+
+        this.cdr.detectChanges();
+      },
+
+      error: () => {
+        this.erroExcluir = true;
+        this.excluindo = false;
 
         this.cdr.detectChanges();
       },

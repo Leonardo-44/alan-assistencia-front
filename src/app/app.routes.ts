@@ -6,6 +6,7 @@ import { Clientes } from './pages/clientes/clientes';
 import { OrdensServico } from './pages/ordens-servico/ordens-servico';
 import { Financeiro } from './pages/financeiro/financeiro';
 import { Vendas } from './pages/vendas/vendas';
+import { Fiados } from './pages/fiados/fiados';
 import { Login } from './pages/login/login';
 import { authGuard } from './guards/auth-guard';
 
@@ -41,6 +42,10 @@ export const routes: Routes = [
       {
         path: 'vendas',
         component: Vendas,
+      },
+      {
+        path: 'fiados',
+        component: Fiados,
       },
       {
         path: 'financeiro',

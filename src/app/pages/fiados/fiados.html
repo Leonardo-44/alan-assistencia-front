@@ -1,0 +1,237 @@
+<div class="fiados-page">
+  <header class="page-header">
+    <div>
+      <h1>Fiados</h1>
+      <p class="page-subtitle" *ngIf="!carregando && !erro">
+        {{ fiadosFiltrados.length }} registro{{ fiadosFiltrados.length === 1 ? '' : 's' }}
+      </p>
+    </div>
+
+    <div class="header-actions">
+      <div class="search-bar" *ngIf="!erro && fiados.length > 0">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="1.8">
+          <circle cx="11" cy="11" r="7" />
+          <path d="M21 21l-4.3-4.3" stroke-linecap="round" />
+        </svg>
+        <input
+          type="text"
+          placeholder="Buscar por cliente ou descrição"
+          [(ngModel)]="termoBusca"
+        />
+      </div>
+
+      <button class="nova-venda-button" (click)="abrirModal()">
+        <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+          <line x1="12" y1="5" x2="12" y2="19" />
+          <line x1="5" y1="12" x2="19" y2="12" />
+        </svg>
+        Novo fiado
+      </button>
+    </div>
+  </header>
+
+  <!-- FILTRO DE STATUS -->
+  <div class="periodo-bar" *ngIf="!erro && fiados.length > 0">
+    <div class="periodo-tabs">
+      <button
+        *ngFor="let status of statusOpcoes"
+        type="button"
+        class="periodo-tab"
+        [class.active]="statusFiltro === status.id"
+        (click)="selecionarStatus(status.id)"
+      >
+        {{ status.label }}
+      </button>
+    </div>
+  </div>
+
+  <div class="resumo-grid" *ngIf="!carregando && !erro && fiados.length > 0">
+    <div class="resumo-card">
+      <span class="resumo-label">Total em fiado</span>
+      <span class="resumo-value">{{ totalFiado | currency: 'BRL' }}</span>
+    </div>
+    <div class="resumo-card">
+      <span class="resumo-label">Pendente</span>
+      <span class="resumo-value">{{ totalPendente | currency: 'BRL' }}</span>
+    </div>
+    <div class="resumo-card">
+      <span class="resumo-label">Pago</span>
+      <span class="resumo-value">{{ totalPago | currency: 'BRL' }}</span>
+    </div>
+  </div>
+
+  <div class="state-message" *ngIf="carregando">
+    <div class="spinner"></div>
+    <p>Carregando fiados...</p>
+  </div>
+
+  <div class="state-message error" *ngIf="erro && !carregando">
+    <p>Não foi possível carregar os fiados.</p>
+    <span>Verifique se o back-end está rodando e tente novamente.</span>
+    <button class="retry-button" (click)="carregarFiados()">Tentar novamente</button>
+  </div>
+
+  <ng-container *ngIf="!carregando && !erro">
+    <div class="empty-state" *ngIf="fiados.length === 0">
+      <p>Nenhum fiado registrado ainda.</p>
+      <span>Os fiados cadastrados vão aparecer aqui.</span>
+    </div>
+
+    <div class="empty-state" *ngIf="fiados.length > 0 && fiadosFiltrados.length === 0">
+      <p>Nenhum resultado encontrado</p>
+      <span>Ajuste a busca ou o filtro selecionado.</span>
+    </div>
+
+    <div class="table-card" *ngIf="fiadosFiltrados.length > 0">
+      <table>
+        <thead>
+          <tr>
+            <th>Cliente</th>
+            <th>Descrição</th>
+            <th>Valor</th>
+            <th>Data</th>
+            <th>Status</th>
+            <th></th>
+          </tr>
+        </thead>
+        <tbody>
+          <tr *ngFor="let fiado of fiadosFiltrados">
+            <td data-label="Cliente">{{ fiado.nomeCliente }}</td>
+            <td data-label="Descrição" class="muted">{{ fiado.descricao || '—' }}</td>
+            <td data-label="Valor" class="mono">{{ fiado.valor | currency: 'BRL' }}</td>
+            <td data-label="Data" class="mono muted">{{ fiado.dataFiado | date: 'dd/MM/yy' }}</td>
+            <td data-label="Status">
+              <span class="badge" [attr.data-status-pagamento]="fiado.pago ? 'PAGO' : 'PENDENTE'">
+                {{ fiado.pago ? 'Pago' : 'Pendente' }}
+              </span>
+            </td>
+            <td data-label="" class="acoes-cell">
+              <button
+                class="pagar-button"
+                [disabled]="atualizandoStatusId === fiado.id"
+                (click)="alternarStatusPago(fiado)"
+              >
+                {{ atualizandoStatusId === fiado.id
+                  ? 'Atualizando...'
+                  : (fiado.pago ? 'Marcar pendente' : 'Marcar como pago') }}
+              </button>
+
+              <button class="comprovante-button" (click)="abrirModalEdicao(fiado)" title="Editar fiado">
+                ✏️
+              </button>
+
+              <button class="comprovante-button excluir-icon" (click)="abrirModalExcluir(fiado)" title="Excluir fiado">
+                🗑️
+              </button>
+            </td>
+          </tr>
+        </tbody>
+      </table>
+    </div>
+  </ng-container>
+
+  <!-- MODAL: NOVO FIADO / EDITAR FIADO -->
+  <div class="modal-overlay" *ngIf="modalAberto" (click)="fecharModal()">
+    <div class="modal-card" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>{{ modoEdicao ? 'Editar fiado' : 'Novo fiado' }}</h2>
+        <button class="modal-close" (click)="fecharModal()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <form class="modal-form" #fiadoForm="ngForm" (ngSubmit)="salvarFiado(fiadoForm)">
+        <div class="form-field">
+          <label for="nomeCliente">Cliente</label>
+          <input
+            id="nomeCliente"
+            type="text"
+            name="nomeCliente"
+            [(ngModel)]="novoFiado.nomeCliente"
+            required
+            placeholder="Ex: João da Silva"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="descricao">Descrição (opcional)</label>
+          <input
+            id="descricao"
+            type="text"
+            name="descricao"
+            [(ngModel)]="novoFiado.descricao"
+            placeholder="Ex: Troca de tela"
+          />
+        </div>
+
+        <div class="form-field">
+          <label for="valor">Valor</label>
+          <input
+            id="valor"
+            type="number"
+            name="valor"
+            min="0"
+            step="0.01"
+            [(ngModel)]="novoFiado.valor"
+            required
+          />
+        </div>
+
+        <p class="modal-erro" *ngIf="erroSalvar">
+          Não foi possível salvar o fiado. Tente novamente.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancelar-button" (click)="fecharModal()">Cancelar</button>
+          <button type="submit" class="salvar-button" [disabled]="salvando">
+            {{ salvando ? 'Salvando...' : (modoEdicao ? 'Salvar alterações' : 'Salvar fiado') }}
+          </button>
+        </div>
+      </form>
+    </div>
+  </div>
+
+  <!-- MODAL: EXCLUIR FIADO -->
+  <div class="modal-overlay" *ngIf="modalExcluirAberto" (click)="fecharModalExcluir()">
+    <div class="modal-card modal-card-sm" (click)="$event.stopPropagation()">
+      <div class="modal-header">
+        <h2>Excluir fiado</h2>
+        <button class="modal-close" (click)="fecharModalExcluir()">
+          <svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2">
+            <line x1="18" y1="6" x2="6" y2="18" />
+            <line x1="6" y1="6" x2="18" y2="18" />
+          </svg>
+        </button>
+      </div>
+
+      <div class="modal-form" *ngIf="fiadoParaExcluir">
+        <p class="excluir-mensagem">
+          Tem certeza que deseja excluir o fiado de
+          <strong>{{ fiadoParaExcluir.nomeCliente }}</strong>?
+          Essa ação não pode ser desfeita.
+        </p>
+
+        <p class="modal-erro" *ngIf="erroExcluir">
+          Não foi possível excluir o fiado. Tente novamente.
+        </p>
+
+        <div class="modal-actions">
+          <button type="button" class="cancelar-button" (click)="fecharModalExcluir()">
+            Cancelar
+          </button>
+          <button
+            type="button"
+            class="excluir-button"
+            [disabled]="excluindo"
+            (click)="confirmarExclusao()"
+          >
+            {{ excluindo ? 'Excluindo...' : 'Excluir' }}
+          </button>
+        </div>
+      </div>
+    </div>
+  </div>
+</div>

@@ -21,7 +21,7 @@
 
         <input
           type="text"
-          placeholder="Buscar por nome, telefone ou e-mail"
+          placeholder="Buscar por nome, telefone ou endereço"
           [(ngModel)]="termoBusca"
         />
       </div>
@@ -70,7 +70,7 @@
     <div class="empty-state" *ngIf="clientes.length > 0 && clientesFiltrados.length === 0">
       <p>Nenhum resultado para "{{ termoBusca }}"</p>
 
-      <span> Tente buscar por outro nome, telefone ou e-mail. </span>
+      <span> Tente buscar por outro nome, telefone ou Endereço </span>
     </div>
 
     <!-- TABELA -->
@@ -81,7 +81,7 @@
           <tr>
             <th>Cliente</th>
             <th>Telefone</th>
-            <th>E-mail</th>
+            <th>Endereço</th>
             <th class="text-right">Ações</th>
           </tr>
         </thead>
@@ -104,8 +104,8 @@
               {{ formatarTelefoneExibicao(cliente.telefone) }}
             </td>
 
-            <td class="muted" data-label="E-mail">
-              {{ cliente.email || '—' }}
+            <td class="muted" data-label="Endereço">
+              {{ cliente.endereco|| '—' }}
             </td>
 
             <td class="actions-cell text-right" data-label="Ações">
@@ -171,12 +171,12 @@
           </div>
 
           <div class="form-group">
-            <label>E-mail <span class="opcional">(opcional)</span></label>
+            <label>Endereço <span class="opcional">(opcional)</span></label>
             <input
-              type="email"
-              [(ngModel)]="novoCliente.email"
-              name="email"
-              placeholder="email@exemplo.com"
+              type="text"
+              [(ngModel)]="novoCliente.endereco"
+              name="endereco"
+              placeholder="São José do Piauí - Atalho"
               autocomplete="off"
             />
           </div>

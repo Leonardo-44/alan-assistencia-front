@@ -147,6 +147,7 @@
           <tr>
             <th>Cliente</th>
             <th>Aparelho</th>
+            <th>IMEI</th>
             <th>Defeito</th>
             <th>Status</th>
             <th>Valor</th>
@@ -166,6 +167,11 @@
             <!-- Aparelho -->
             <td data-label="Aparelho" class="muted">
               {{ os.aparelho }}
+            </td>
+
+            <!-- IMEI -->
+            <td data-label="IMEI" class="mono muted">
+              {{ os.imei || '—' }}
             </td>
 
             <!-- Defeito -->

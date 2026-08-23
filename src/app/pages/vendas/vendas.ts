@@ -4,6 +4,8 @@ import { FormsModule, NgForm } from '@angular/forms';
 import { finalize } from 'rxjs';
 
 import { VendaService } from '../../core/services/venda';
+import { ClienteService } from '../../core/services/cliente';
+import { Cliente } from '../../core/models/cliente/cliente-module';
 import { Venda, VendaRequest, StatusPagamento, ComprovanteVendaRequest } from '../../core/models/venda/venda-module';
 
 type PeriodoId = 'hoje' | '7dias' | 'mes' | 'personalizado';
@@ -24,10 +26,12 @@ type PeriodoId = 'hoje' | '7dias' | 'mes' | 'personalizado';
 export class Vendas implements OnInit {
 
   private vendaService = inject(VendaService);
+  private clienteService = inject(ClienteService);
 
   private readonly cdr = inject(ChangeDetectorRef);
 
   vendas: Venda[] = [];
+  clientes: Cliente[] = [];
 
   carregando = false;
   erro = false;
@@ -124,6 +128,7 @@ export class Vendas implements OnInit {
 
   ngOnInit(): void {
     this.carregarVendas();
+    this.carregarClientes();
   }
 
   carregarVendas(): void {
@@ -153,6 +158,26 @@ export class Vendas implements OnInit {
       });
   }
 
+  carregarClientes(): void {
+    this.clienteService.listarTodos().subscribe({
+      next: (dados) => {
+        this.clientes = dados ?? [];
+        this.cdr.detectChanges();
+      },
+      error: (err) => {
+        console.error('Erro ao carregar clientes:', err);
+      },
+    });
+  }
+
+  nomeCliente(clienteId: number | null | undefined): string {
+    if (!clienteId) {
+      return '—';
+    }
+    const cliente = this.clientes.find(c => c.id === clienteId);
+    return cliente?.nome ?? '—';
+  }
+
   get vendasFiltradas(): Venda[] {
 
     const termo = this.termoBusca.trim().toLowerCase();
@@ -165,7 +190,8 @@ export class Vendas implements OnInit {
     return base.filter(
       (venda) =>
         venda.aparelho?.toLowerCase().includes(termo) ||
-        venda.formaPagamento?.toLowerCase().includes(termo)
+        venda.formaPagamento?.toLowerCase().includes(termo) ||
+        this.nomeCliente(venda.clienteId).toLowerCase().includes(termo)
     );
   }
 
@@ -217,6 +243,7 @@ export class Vendas implements OnInit {
 
   private vendaVazia(): VendaRequest {
     return {
+      clienteId: undefined,
       aparelho: '',
       imei: '',
       valor: 0,
@@ -238,6 +265,7 @@ export class Vendas implements OnInit {
     this.vendaEmEdicaoId = venda.id;
 
     this.novaVenda = {
+      clienteId: venda.clienteId ?? undefined,
       aparelho: venda.aparelho,
       imei: venda.imei ?? '',
       valor: venda.valor,

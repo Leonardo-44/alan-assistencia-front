@@ -36,10 +36,11 @@ export class Clientes implements OnInit {
   modoEdicao = false;
   clienteEmEdicaoId: number | null = null;
 
+  // OBS: "email" aqui guarda o ENDEREÇO do cliente (o back-end ainda usa esse nome de campo).
   novoCliente: ClienteRequest = {
     nome: '',
     telefone: '',
-    email: '',
+    endereco: '',
   };
 
   // Modal de exclusão
@@ -97,7 +98,7 @@ export class Clientes implements OnInit {
 
     return this.clientes.filter((cliente) =>
       cliente.nome?.toLowerCase().includes(termo) ||
-      cliente.email?.toLowerCase().includes(termo) ||
+      cliente.endereco?.toLowerCase().includes(termo) ||
       cliente.telefone?.toLowerCase().includes(termo)
     );
   }
@@ -179,9 +180,11 @@ export class Clientes implements OnInit {
   abrirModal(): void {
     this.modoEdicao = false;
     this.clienteEmEdicaoId = null;
-    this.novoCliente = { nome: '', telefone: '', email: '' };
+    this.novoCliente = { nome: '', telefone: '', endereco: '' };
     this.erroSalvar = false;
     this.modalAberto = true;
+
+    this.cdr.detectChanges();
   }
 
   abrirModalEdicao(cliente: Cliente): void {
@@ -190,14 +193,18 @@ export class Clientes implements OnInit {
     this.novoCliente = {
       nome: cliente.nome,
       telefone: cliente.telefone ?? '',
-      email: cliente.email ?? '',
+      endereco: cliente.endereco ?? '',
     };
     this.erroSalvar = false;
     this.modalAberto = true;
+
+    this.cdr.detectChanges();
   }
 
   fecharModal(): void {
     this.modalAberto = false;
+
+    this.cdr.detectChanges();
   }
 
   salvarCliente(): void {
@@ -211,7 +218,7 @@ export class Clientes implements OnInit {
     const dto: ClienteRequest = {
       nome: this.novoCliente.nome.trim(),
       telefone: this.novoCliente.telefone?.trim() || '',
-      email: this.novoCliente.email?.trim() || '',
+      endereco: this.novoCliente.endereco?.trim() || '',
     };
 
     if (this.modoEdicao && this.clienteEmEdicaoId != null) {
@@ -262,11 +269,15 @@ export class Clientes implements OnInit {
   abrirModalExclusao(cliente: Cliente): void {
     this.clienteParaExcluir = cliente;
     this.erroExcluir = false;
+
+    this.cdr.detectChanges();
   }
 
   fecharModalExclusao(): void {
     this.clienteParaExcluir = null;
     this.erroExcluir = false;
+
+    this.cdr.detectChanges();
   }
 
   confirmarExclusao(): void {

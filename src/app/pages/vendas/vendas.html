@@ -16,7 +16,7 @@
         </svg>
         <input
           type="text"
-          placeholder="Buscar por aparelho ou pagamento"
+          placeholder="Buscar por cliente, aparelho ou pagamento"
           [(ngModel)]="termoBusca"
         />
       </div>
@@ -93,7 +93,9 @@
       <table>
         <thead>
           <tr>
+            <th>Cliente</th>
             <th>Aparelho</th>
+            <th>IMEI</th>
             <th>Valor</th>
             <th>Pago</th>
             <th>Restante</th>
@@ -105,7 +107,9 @@
         </thead>
         <tbody>
           <tr *ngFor="let venda of vendasFiltradas">
+            <td data-label="Cliente" class="font-medium">{{ nomeCliente(venda.clienteId) }}</td>
             <td data-label="Aparelho">{{ venda.aparelho }}</td>
+            <td data-label="IMEI" class="mono muted">{{ venda.imei || '—' }}</td>
             <td data-label="Valor" class="mono">{{ venda.valor | currency: 'BRL' }}</td>
             <td data-label="Pago" class="mono muted">{{ venda.valorPago | currency: 'BRL' }}</td>
             <td data-label="Restante" class="mono" [class.positivo]="venda.valorRestante === 0">
@@ -159,6 +163,20 @@
       </div>
 
       <form class="modal-form" #vendaForm="ngForm" (ngSubmit)="salvarVenda(vendaForm)">
+        <div class="form-field">
+          <label for="clienteId">Cliente</label>
+          <select
+            id="clienteId"
+            name="clienteId"
+            [(ngModel)]="novaVenda.clienteId"
+          >
+            <option [ngValue]="undefined">Sem cliente vinculado</option>
+            <option *ngFor="let cliente of clientes" [ngValue]="cliente.id">
+              {{ cliente.nome }}
+            </option>
+          </select>
+        </div>
+
         <div class="form-field">
           <label for="aparelho">Aparelho</label>
           <input

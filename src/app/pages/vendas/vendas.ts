@@ -8,7 +8,7 @@ import { ClienteService } from '../../core/services/cliente';
 import { Cliente } from '../../core/models/cliente/cliente-module';
 import { Venda, VendaRequest, StatusPagamento, ComprovanteVendaRequest } from '../../core/models/venda/venda-module';
 
-type PeriodoId = 'hoje' | '7dias' | 'mes' | 'personalizado';
+type PeriodoId = 'todas' | 'hoje' | '7dias' | 'mes' | 'personalizado';
 
 @Component({
   selector: 'app-vendas',
@@ -49,13 +49,14 @@ export class Vendas implements OnInit {
   // =========================
 
   readonly periodos: { id: PeriodoId; label: string }[] = [
+    { id: 'todas', label: 'Tudo' },
     { id: 'hoje', label: 'Hoje' },
     { id: '7dias', label: '7 dias' },
     { id: 'mes', label: 'Este mês' },
     { id: 'personalizado', label: 'Personalizado' },
   ];
 
-  periodoSelecionado: PeriodoId = 'mes';
+  periodoSelecionado: PeriodoId = 'todas';
 
   dataInicioPersonalizada = '';
   dataFimPersonalizada = '';
@@ -80,6 +81,9 @@ export class Vendas implements OnInit {
     const hoje = new Date();
 
     switch (this.periodoSelecionado) {
+      case 'todas':
+        return null;
+
       case 'hoje':
         return { inicio: this.inicioDoDia(hoje), fim: this.fimDoDia(hoje) };
 
@@ -466,6 +470,7 @@ export class Vendas implements OnInit {
       valor: undefined,
       valorPago: undefined,
       formaPagamento: '',
+      garantiaDias: 0,
     };
   }
 
@@ -477,6 +482,7 @@ export class Vendas implements OnInit {
       valor: venda.valor,
       valorPago: venda.valorPago,
       formaPagamento: venda.formaPagamento,
+      garantiaDias: 0,
     };
 
     this.modalComprovanteAberto = true;

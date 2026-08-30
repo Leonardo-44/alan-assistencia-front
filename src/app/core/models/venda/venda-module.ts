@@ -31,4 +31,5 @@ export interface ComprovanteVendaRequest {
   valor?: number;
   valorPago?: number;
   formaPagamento?: string;
+  garantiaDias?: number;
 }

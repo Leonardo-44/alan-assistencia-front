@@ -321,17 +321,30 @@
           </div>
         </div>
 
-        <div class="form-field">
-          <label for="formaPagamentoComp">Forma de pagamento</label>
-          <select
-            id="formaPagamentoComp"
-            name="formaPagamento"
-            [(ngModel)]="comprovanteForm.formaPagamento"
-            required
-          >
-            <option value="" disabled>Selecione</option>
-            <option *ngFor="let forma of formasPagamento" [value]="forma">{{ forma }}</option>
-          </select>
+        <div class="form-row">
+          <div class="form-field">
+            <label for="formaPagamentoComp">Forma de pagamento</label>
+            <select
+              id="formaPagamentoComp"
+              name="formaPagamento"
+              [(ngModel)]="comprovanteForm.formaPagamento"
+              required
+            >
+              <option value="" disabled>Selecione</option>
+              <option *ngFor="let forma of formasPagamento" [value]="forma">{{ forma }}</option>
+            </select>
+          </div>
+
+          <div class="form-field">
+            <label for="garantiaDiasComp">Garantia (dias)</label>
+            <input
+              id="garantiaDiasComp"
+              type="number"
+              name="garantiaDias"
+              min="0"
+              [(ngModel)]="comprovanteForm.garantiaDias"
+            />
+          </div>
         </div>
 
         <div class="modal-actions">

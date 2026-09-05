@@ -331,15 +331,17 @@
             </div>
 
             <div class="form-group">
-              <label for="garantiaDias"> Garantia (dias) </label>
+              <label for="garantiaDias"> Garantia </label>
 
-              <input
+              <select
                 id="garantiaDias"
-                type="number"
-                min="0"
                 name="garantiaDias"
                 [(ngModel)]="comprovanteForm.garantiaDias"
-              />
+              >
+                <option *ngFor="let opcao of garantiaOpcoes" [ngValue]="opcao.dias">
+                  {{ opcao.label }}
+                </option>
+              </select>
             </div>
           </div>
         </div>

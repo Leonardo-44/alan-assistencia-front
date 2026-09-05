@@ -460,6 +460,16 @@ export class Vendas implements OnInit {
   modalComprovanteAberto = false;
   gerandoComprovante = false;
 
+  /**
+   * Padrão fixo de garantia: evita digitação livre de dias.
+   * "Sem garantia" = 0 dias, "6 meses" = 180 dias, "1 ano" = 365 dias.
+   */
+  readonly garantiaOpcoes: { label: string; dias: number }[] = [
+    { label: 'Sem garantia', dias: 0 },
+    { label: '6 meses', dias: 180 },
+    { label: '1 ano', dias: 365 },
+  ];
+
   comprovanteForm: ComprovanteVendaRequest & { vendaId: number | null } = this.comprovanteVazio();
 
   private comprovanteVazio(): ComprovanteVendaRequest & { vendaId: number | null } {
@@ -470,7 +480,7 @@ export class Vendas implements OnInit {
       valor: undefined,
       valorPago: undefined,
       formaPagamento: '',
-      garantiaDias: 0,
+      garantiaDias: this.garantiaOpcoes[0].dias,
     };
   }
 
@@ -482,7 +492,7 @@ export class Vendas implements OnInit {
       valor: venda.valor,
       valorPago: venda.valorPago,
       formaPagamento: venda.formaPagamento,
-      garantiaDias: 0,
+      garantiaDias: this.garantiaOpcoes[0].dias,
     };
 
     this.modalComprovanteAberto = true;

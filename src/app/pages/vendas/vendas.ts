@@ -466,6 +466,7 @@ export class Vendas implements OnInit {
    */
   readonly garantiaOpcoes: { label: string; dias: number }[] = [
     { label: 'Sem garantia', dias: 0 },
+    { label: '3 meses', dias: 90},
     { label: '6 meses', dias: 180 },
     { label: '1 ano', dias: 365 },
   ];
